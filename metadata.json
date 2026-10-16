@@ -1,0 +1,6 @@
+{
+  "name": "Новостной Пульс",
+  "description": "Агрегатор новостей в реальном времени с автоматическим обновлением, категориями, аудио-озвучиванием и закладками",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

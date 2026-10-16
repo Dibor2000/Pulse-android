@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Glowing backdrop pulse ring -->
+    <path
+        android:fillColor="#22E11D48"
+        android:pathData="M54,54m-28,0a28,28 0,1,1 56,0a28,28 0,1,1 -56,0" />
+
+    <!-- Newspaper Main Sheet -->
+    <path
+        android:fillColor="#F8FAFC"
+        android:pathData="M30,30h38c2.2,0 4,1.8 4,4v40c0,2.2 -1.8,4 -4,4H30c-2.2,0 -4,-1.8 -4,-4V34c0,-2.2 1.8,-4 4,-4z" />
+
+    <!-- Folded Newspaper Header Accent -->
+    <path
+        android:fillColor="#E11D48"
+        android:pathData="M30,30h38c2.2,0 4,1.8 4,4v8H26v-8c0,-2.2 1.8,-4 4,-4z" />
+
+    <!-- Newspaper Headline Mock Lines -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M31,35h20v2h-20z M55,35h12v2h-12z" />
+
+    <!-- Main Hero Image Area inside the paper -->
+    <path
+        android:fillColor="#CBD5E1"
+        android:pathData="M31,46h24v12h-24z" />
+
+    <!-- Text columns in newspaper -->
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M59,46h11v2h-11z M59,51h11v2h-11z M59,56h9v2h-9z" />
+
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M31,62h39v2h-39z M31,67h39v2h-39z M31,72h26v2h-26z" />
+
+    <!-- Dynamic Live Pulse Wave cutting across the bottom-right -->
+    <path
+        android:strokeColor="#E11D48"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M52,68 L58,68 L62,56 L67,78 L71,64 L75,70 L84,70" />
+
+    <!-- Pulsing Live Point -->
+    <path
+        android:fillColor="#F43F5E"
+        android:pathData="M84,70m-2.5,0a2.5,2.5 0,1,1 5,0a2.5,2.5 0,1,1 -5,0" />
+
+</vector>

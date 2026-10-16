@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Новостной Пульс</string>
+    <string name="nav_feed">Лента</string>
+    <string name="nav_stories">Сюжеты</string>
+    <string name="nav_bookmarks">Закладки</string>
+    <string name="nav_sources">Источники</string>
+    <string name="nav_settings">Настройки</string>
+    <string name="category_all">Все</string>
+    <string name="category_tech">Технологии</string>
+    <string name="category_world">Мир</string>
+    <string name="category_science">Наука</string>
+    <string name="category_business">Бизнес</string>
+    <string name="category_games">Игры</string>
+    <string name="live_badge">LIVE</string>
+    <string name="breaking_news">Срочные новости</string>
+</resources>
