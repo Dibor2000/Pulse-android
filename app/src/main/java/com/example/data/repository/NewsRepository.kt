@@ -13,6 +13,9 @@ import com.example.data.remote.NewsRssFetcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +25,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 
 class NewsRepository(
@@ -42,10 +47,10 @@ class NewsRepository(
     private val _lastUpdated = MutableStateFlow(System.currentTimeMillis())
     val lastUpdated: StateFlow<Long> = _lastUpdated.asStateFlow()
 
-    private val _autoRefreshIntervalSec = MutableStateFlow(30) // Default 30s
+    private val _autoRefreshIntervalSec = MutableStateFlow(60) // Default 60s
     val autoRefreshIntervalSec: StateFlow<Int> = _autoRefreshIntervalSec.asStateFlow()
 
-    private val _countdownSeconds = MutableStateFlow(30)
+    private val _countdownSeconds = MutableStateFlow(60)
     val countdownSeconds: StateFlow<Int> = _countdownSeconds.asStateFlow()
 
     private var autoRefreshJob: Job? = null
@@ -72,7 +77,7 @@ class NewsRepository(
                 android.util.Log.e("NewsRepository", "Error seeding initial database", e)
             }
             try {
-                // Trigger fresh fetch
+                // Trigger fast progressive fetch
                 refreshFeeds()
             } catch (e: Exception) {
                 android.util.Log.e("NewsRepository", "Error in initial feeds refresh", e)
@@ -115,31 +120,61 @@ class NewsRepository(
 
         try {
             val enabledSources = _sources.value.filter { it.isEnabled }
-            val newArticles = mutableListOf<NewsArticle>()
+            if (enabledSources.isEmpty()) return@withContext
 
-            val updatedSources = _sources.value.map { source ->
-                if (!source.isEnabled) return@map source
-                val fetched = rssFetcher.fetchFeed(source)
-                newArticles.addAll(fetched)
-                source.copy(
-                    lastFetchedCount = fetched.size,
-                    status = if (fetched.isNotEmpty()) "Онлайн (${fetched.size})" else "Доступен"
-                )
+            // Pre-fetch bookmarked and read IDs once to avoid O(N) database roundtrips
+            val bookmarkedIds = try {
+                articleDao.getBookmarkedArticleIds().toSet()
+            } catch (_: Exception) {
+                emptySet()
             }
-            _sources.value = updatedSources
+            val readIds = try {
+                articleDao.getReadArticleIds().toSet()
+            } catch (_: Exception) {
+                emptySet()
+            }
 
-            if (newArticles.isNotEmpty()) {
-                val entitiesToInsert = newArticles.map { article ->
-                    val existingBookmark = articleDao.isArticleBookmarked(article.id) ?: false
-                    val existingRead = articleDao.isArticleRead(article.id) ?: false
-                    ArticleEntity.fromDomain(article, existingBookmark, existingRead)
-                }
-                articleDao.insertArticles(entitiesToInsert)
+            // Prioritize favorites and Russian sources first for instant visible feedback
+            val prioritizedSources = enabledSources.sortedWith(
+                compareByDescending<NewsSource> { it.isFavorite }
+                    .thenByDescending { it.language == "RU" }
+            )
+
+            // Concurrency pool of 6 parallel workers
+            val concurrencyLimit = Semaphore(6)
+            val updatedSourcesMap = _sources.value.associateBy { it.id }.toMutableMap()
+
+            coroutineScope {
+                prioritizedSources.map { source ->
+                    async {
+                        concurrencyLimit.withPermit {
+                            val fetched = rssFetcher.fetchFeed(source)
+                            if (fetched.isNotEmpty()) {
+                                // Progressive insert: as soon as any source finishes,
+                                // immediately save to Room DB so the feed advances in real time!
+                                val entities = fetched.map { article ->
+                                    val isBookmarked = bookmarkedIds.contains(article.id)
+                                    val isRead = readIds.contains(article.id)
+                                    ArticleEntity.fromDomain(article, isBookmarked, isRead)
+                                }
+                                articleDao.insertArticles(entities)
+                            }
+
+                            synchronized(updatedSourcesMap) {
+                                updatedSourcesMap[source.id] = source.copy(
+                                    lastFetchedCount = fetched.size,
+                                    status = if (fetched.isNotEmpty()) "Онлайн (${fetched.size})" else "Доступен"
+                                )
+                                _sources.value = _sources.value.map { updatedSourcesMap[it.id] ?: it }
+                            }
+                        }
+                    }
+                }.awaitAll()
             }
 
             _lastUpdated.value = System.currentTimeMillis()
-        } catch (_: Exception) {
-            // Fallback gracefully
+        } catch (e: Exception) {
+            android.util.Log.e("NewsRepository", "Error refreshing feeds", e)
         } finally {
             _isRefreshing.value = false
             _countdownSeconds.value = _autoRefreshIntervalSec.value

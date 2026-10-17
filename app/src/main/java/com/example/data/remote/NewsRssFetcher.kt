@@ -12,14 +12,18 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.xmlpull.v1.XmlPullParser
 import java.io.StringReader
+import okhttp3.ConnectionPool
 import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 
 class NewsRssFetcher {
 
     private val client = OkHttpClient.Builder()
-        .connectTimeout(8, TimeUnit.SECONDS)
-        .readTimeout(10, TimeUnit.SECONDS)
+        .connectionPool(ConnectionPool(24, 2, TimeUnit.MINUTES))
+        .connectTimeout(3500, TimeUnit.MILLISECONDS)
+        .readTimeout(4500, TimeUnit.MILLISECONDS)
+        .callTimeout(6000, TimeUnit.MILLISECONDS)
+        .retryOnConnectionFailure(false) // Don't hang trying multiple times on dead servers
         .followRedirects(true)
         .build()
 
@@ -28,6 +32,7 @@ class NewsRssFetcher {
             .url(source.feedUrl)
             .header("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Mobile Safari/537.36")
             .header("Accept", "application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9, */*;q=0.8")
+            .header("Accept-Encoding", "gzip, deflate")
             .build()
 
         try {

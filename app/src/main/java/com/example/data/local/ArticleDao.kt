@@ -29,6 +29,12 @@ interface ArticleDao {
     @Query("SELECT isRead FROM articles WHERE id = :id LIMIT 1")
     suspend fun isArticleRead(id: String): Boolean?
 
+    @Query("SELECT id FROM articles WHERE isBookmarked = 1")
+    suspend fun getBookmarkedArticleIds(): List<String>
+
+    @Query("SELECT id FROM articles WHERE isRead = 1")
+    suspend fun getReadArticleIds(): List<String>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertArticles(articles: List<ArticleEntity>)
 
