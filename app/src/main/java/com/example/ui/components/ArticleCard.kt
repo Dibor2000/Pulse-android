@@ -177,17 +177,34 @@ fun ArticleCard(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                // Description
-                if (article.description.isNotBlank()) {
+                // Concise Summary block in feed
+                val shortSummary = com.example.util.HtmlUtils.extractShortSummary(article.description.ifBlank { article.content })
+                if (shortSummary.isNotBlank()) {
                     Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = article.description,
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f))
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.Top) {
+                            Text(
+                                text = "⚡",
+                                fontSize = 11.sp,
+                                modifier = Modifier.padding(top = 1.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = shortSummary,
+                                fontSize = 12.sp,
+                                lineHeight = 16.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))

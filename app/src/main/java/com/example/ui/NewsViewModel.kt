@@ -75,6 +75,17 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
     val sources: StateFlow<List<NewsSource>> = repository.sources
     val lastUpdated: StateFlow<Long> = repository.lastUpdated
 
+    private val translationService = com.example.data.remote.TranslationService()
+
+    private val _targetLanguage = MutableStateFlow("ru")
+    val targetLanguage: StateFlow<String> = _targetLanguage.asStateFlow()
+
+    private val _translatedArticles = MutableStateFlow<Map<String, NewsArticle>>(emptyMap())
+    val translatedArticles: StateFlow<Map<String, NewsArticle>> = _translatedArticles.asStateFlow()
+
+    private val _isTranslating = MutableStateFlow<Map<String, Boolean>>(emptyMap())
+    val isTranslating: StateFlow<Map<String, Boolean>> = _isTranslating.asStateFlow()
+
     private val _personalization = MutableStateFlow(com.example.data.model.UserPersonalization())
     val personalization: StateFlow<com.example.data.model.UserPersonalization> = _personalization.asStateFlow()
 
@@ -234,6 +245,33 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setPersonalizationDialogVisible(visible: Boolean) {
         _isPersonalizationDialogOpen.value = visible
+    }
+
+    fun setTargetLanguage(langCode: String) {
+        _targetLanguage.value = langCode
+        // Invalidate current translations to re-translate into new language if requested
+        _translatedArticles.value = emptyMap()
+    }
+
+    fun toggleTranslateArticle(article: NewsArticle) {
+        val articleId = article.id
+        if (_translatedArticles.value.containsKey(articleId)) {
+            // Revert back to original
+            _translatedArticles.value = _translatedArticles.value - articleId
+            return
+        }
+
+        viewModelScope.launch {
+            _isTranslating.value = _isTranslating.value + (articleId to true)
+            try {
+                val translated = translationService.translateArticle(article, _targetLanguage.value)
+                _translatedArticles.value = _translatedArticles.value + (articleId to translated)
+            } catch (e: Exception) {
+                android.util.Log.e("NewsViewModel", "Translation error for ${article.id}", e)
+            } finally {
+                _isTranslating.value = _isTranslating.value - articleId
+            }
+        }
     }
 
     fun selectTopic(topic: com.example.data.model.TopicStory?) {

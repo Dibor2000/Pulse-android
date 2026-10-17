@@ -38,14 +38,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.theme.NewsCrimson
 
-import androidx.compose.material.icons.filled.Android
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.Button
 
 @Composable
 fun SettingsScreen(
     autoRefreshIntervalSec: Int,
+    targetLanguage: String = "ru",
     onIntervalChange: (Int) -> Unit,
+    onTargetLanguageChange: (String) -> Unit = {},
     onClearCache: () -> Unit,
     onOpenPersonalization: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -204,7 +207,7 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // APK Installation instruction card
+            // Translation target language card
             Card(
                 shape = RoundedCornerShape(14.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -214,27 +217,56 @@ fun SettingsScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Default.Android,
+                            imageVector = Icons.Default.Translate,
                             contentDescription = null,
-                            tint = NewsCrimson,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Установка приложения на телефон (APK)",
+                            text = "Авто-перевод материалов",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
                     Text(
-                        text = "1. Скомпилированный установочный файл APK находится в сборке проекта по пути:\napp/build/outputs/apk/debug/app-debug.apk\n\n2. Скачайте APK файл или экспортируйте проект через меню AI Studio.\n\n3. Передайте файл на телефон (через USB, Telegram или Google Диск).\n\n4. Откройте файл на Android-устройстве и при запросе выберите «Разрешить установку из неизвестных источников».\n\n5. Нажмите «Установить» — приложение со всеми функциями появится на рабочем столе телефона!",
+                        text = "Выберите язык для мгновенного перевода статей и сводок из зарубежных изданий (Reuters, BBC, CNN и др.)",
                         fontSize = 12.sp,
-                        lineHeight = 18.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    val languages = com.example.data.remote.TranslationLanguages.ALL
+
+                    languages.forEach { lang ->
+                        val isSelected = targetLanguage.equals(lang.code, ignoreCase = true)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onTargetLanguageChange(lang.code) }
+                                .padding(vertical = 8.dp)
+                                .testTag("lang_option_${lang.code}")
+                        ) {
+                            Icon(
+                                imageVector = if (isSelected) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
+                                contentDescription = null,
+                                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(
+                                text = "${lang.flag}  ${lang.displayName}",
+                                fontSize = 13.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
                 }
             }
 

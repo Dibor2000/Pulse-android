@@ -11,7 +11,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,20 +32,23 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.OpenInBrowser
-import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.Timeline
+import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -71,8 +73,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.data.model.NewsArticle
+import com.example.data.remote.TranslationLanguages
 import com.example.ui.theme.NewsCrimson
 import com.example.ui.theme.NewsEmerald
+import com.example.util.HtmlUtils
 import com.example.util.TimeUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,6 +86,10 @@ fun ArticleReaderScreen(
     fontSizeSp: Int,
     isPlayingAudio: Boolean,
     topics: List<com.example.data.model.TopicStory> = emptyList(),
+    translatedArticle: NewsArticle? = null,
+    isTranslating: Boolean = false,
+    targetLanguageCode: String = "ru",
+    onToggleTranslate: (NewsArticle) -> Unit = {},
     onBack: () -> Unit,
     onBookmarkToggle: (String) -> Unit,
     onAudioPlay: (NewsArticle) -> Unit,
@@ -94,6 +102,10 @@ fun ArticleReaderScreen(
     BackHandler { onBack() }
     val context = LocalContext.current
     val scrollState = rememberScrollState()
+
+    val activeArticle = translatedArticle ?: article
+    val isCurrentTranslated = translatedArticle != null
+    val targetLang = TranslationLanguages.getByCode(targetLanguageCode)
 
     val infiniteTransition = rememberInfiniteTransition(label = "audio_bars")
     val waveHeight1 by infiniteTransition.animateFloat(
@@ -140,6 +152,26 @@ fun ArticleReaderScreen(
                     }
                 },
                 actions = {
+                    // Translate action button
+                    IconButton(
+                        onClick = { onToggleTranslate(article) },
+                        modifier = Modifier.testTag("reader_translate_button")
+                    ) {
+                        if (isTranslating) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Translate,
+                                contentDescription = "Авто-перевод на ${targetLang.displayName}",
+                                tint = if (isCurrentTranslated) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+
                     // Font size adjuster
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -159,7 +191,7 @@ fun ArticleReaderScreen(
                                 .padding(horizontal = 6.dp, vertical = 4.dp)
                         )
                         Text(
-                            text = "${fontSizeSp}",
+                            text = "$fontSizeSp",
                             fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -192,8 +224,8 @@ fun ArticleReaderScreen(
                         onClick = {
                             val sendIntent = Intent().apply {
                                 action = Intent.ACTION_SEND
-                                putExtra(Intent.EXTRA_TITLE, article.title)
-                                putExtra(Intent.EXTRA_TEXT, "${article.title}\n\n${article.link}")
+                                putExtra(Intent.EXTRA_TITLE, activeArticle.title)
+                                putExtra(Intent.EXTRA_TEXT, "${activeArticle.title}\n\n${activeArticle.description}\n\n${article.link}")
                                 type = "text/plain"
                             }
                             context.startActivity(Intent.createChooser(sendIntent, "Поделиться новостью"))
@@ -271,7 +303,7 @@ fun ArticleReaderScreen(
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Text(
-                                    text = "~ ${article.readTimeMinutes} мин аудио-чтения",
+                                    text = "~ ${activeArticle.readTimeMinutes} мин аудио-чтения",
                                     fontSize = 11.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -292,7 +324,7 @@ fun ArticleReaderScreen(
                         }
                     } else {
                         Button(
-                            onClick = { onAudioPlay(article) },
+                            onClick = { onAudioPlay(activeArticle) },
                             shape = RoundedCornerShape(10.dp),
                             modifier = Modifier.testTag("audio_play_button")
                         ) {
@@ -313,15 +345,15 @@ fun ArticleReaderScreen(
                 .verticalScroll(scrollState)
         ) {
             // Hero Image
-            if (!article.imageUrl.isNullOrBlank()) {
+            if (!activeArticle.imageUrl.isNullOrBlank()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(240.dp)
                 ) {
                     AsyncImage(
-                        model = article.imageUrl,
-                        contentDescription = article.title,
+                        model = activeArticle.imageUrl,
+                        contentDescription = activeArticle.title,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -351,7 +383,7 @@ fun ArticleReaderScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    if (article.isBreaking) {
+                    if (activeArticle.isBreaking) {
                         Text(
                             text = "СРОЧНАЯ НОВОСТЬ",
                             color = Color.White,
@@ -365,7 +397,7 @@ fun ArticleReaderScreen(
                     }
 
                     Text(
-                        text = article.category.displayName,
+                        text = activeArticle.category.displayName,
                         color = MaterialTheme.colorScheme.primary,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
@@ -382,7 +414,7 @@ fun ArticleReaderScreen(
 
                 // Title
                 Text(
-                    text = article.title,
+                    text = activeArticle.title,
                     fontSize = (fontSizeSp + 5).sp,
                     fontWeight = FontWeight.Bold,
                     lineHeight = (fontSizeSp + 11).sp,
@@ -397,7 +429,7 @@ fun ArticleReaderScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = article.sourceName,
+                        text = activeArticle.sourceName,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.primary
@@ -409,48 +441,146 @@ fun ArticleReaderScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = TimeUtils.formatExactDateTime(article.publishedAt),
+                        text = TimeUtils.formatExactDateTime(activeArticle.publishedAt),
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "•",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "~${activeArticle.readTimeMinutes} мин",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
-                // Lead Description (highlighted callout)
-                if (article.description.isNotBlank()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
-                            .padding(14.dp)
+                // Translation Bar / Toggle
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = if (isCurrentTranslated) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onToggleTranslate(article) }
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
                     ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Translate,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = when {
+                                    isTranslating -> "Переводим текст на ${targetLang.displayName}..."
+                                    isCurrentTranslated -> "Переведено на ${targetLang.displayName} ${targetLang.flag}"
+                                    else -> "Авто-перевод на ${targetLang.displayName} ${targetLang.flag}"
+                                },
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+
                         Text(
-                            text = article.description,
-                            fontSize = (fontSizeSp + 1).sp,
-                            lineHeight = (fontSizeSp + 7).sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            text = if (isCurrentTranslated) "Показать оригинал" else "Перевести",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(18.dp))
 
-                // Full Content
-                val contentToDisplay = if (article.content.isNotBlank()) article.content else article.description
-                Text(
-                    text = contentToDisplay,
-                    fontSize = fontSizeSp.sp,
-                    lineHeight = (fontSizeSp + 8).sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                // Short Summary Section (Краткая сводка / Главное)
+                val summaryText = activeArticle.description.ifBlank { HtmlUtils.extractShortSummary(activeArticle.content) }
+                if (summaryText.isNotBlank()) {
+                    Card(
+                        shape = RoundedCornerShape(14.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.FlashOn,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "КРАТКАЯ СВОДКА (ГЛАВНОЕ)",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Black,
+                                    letterSpacing = 0.8.sp,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = summaryText,
+                                fontSize = (fontSizeSp + 1).sp,
+                                lineHeight = (fontSizeSp + 7).sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
+                // Detailed Section Header
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "📖 Подробный материал и разбор",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Full Content: guaranteed rich and formatted by paragraphs
+                val fullBody = HtmlUtils.ensureRichContent(
+                    existingContent = activeArticle.content,
+                    title = activeArticle.title,
+                    description = activeArticle.description,
+                    sourceName = activeArticle.sourceName,
+                    categoryName = activeArticle.category.displayName
+                )
+
+                val paragraphs = fullBody.split("\n\n").filter { it.isNotBlank() }
+                paragraphs.forEach { paragraph ->
+                    Text(
+                        text = paragraph.trim(),
+                        fontSize = fontSizeSp.sp,
+                        lineHeight = (fontSizeSp + 8).sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 // Event Storyline Card
-                val linkedTopic = topics.find { it.id == article.topicId || it.articleIds.contains(article.id) }
+                val linkedTopic = topics.find { it.id == activeArticle.topicId || it.articleIds.contains(activeArticle.id) }
                 Card(
                     shape = RoundedCornerShape(14.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
@@ -477,15 +607,6 @@ fun ArticleReaderScreen(
                                     color = MaterialTheme.colorScheme.primary
                                 )
                             }
-
-                            if (linkedTopic?.isPinned == true) {
-                                Text(
-                                    text = "📌 Закреплено",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = NewsCrimson
-                                )
-                            }
                         }
 
                         Spacer(modifier = Modifier.height(6.dp))
@@ -499,7 +620,7 @@ fun ArticleReaderScreen(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Хронология: ${linkedTopic.events.size} этапов развития",
+                                text = "Хронология: ${linkedTopic.events.size} этапов развития события",
                                 fontSize = 11.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -510,11 +631,11 @@ fun ArticleReaderScreen(
                                     .fillMaxWidth()
                                     .testTag("open_storyline_button")
                             ) {
-                                Text("Открыть полную хронологию сюжета →")
+                                Text("Открыть полную хронику сюжета →")
                             }
                         } else {
                             Text(
-                                text = "Объедините связанные новости в хронологию или создайте развивающийся сюжет с уведомлениями.",
+                                text = "Объедините связанные новости в хронологию или создайте развивающийся сюжет для отслеживания.",
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -525,7 +646,7 @@ fun ArticleReaderScreen(
                                     .fillMaxWidth()
                                     .testTag("create_or_link_topic_button")
                             ) {
-                                Text("Создать сюжет / Прикрепить к хронологии")
+                                Text("Создать сюжет / Прикрепить к хронике")
                             }
                         }
                     }
@@ -552,7 +673,7 @@ fun ArticleReaderScreen(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Читать полный материал в источнике")
+                        Text("Оригинал в источнике (${article.sourceName})")
                     }
                 }
 

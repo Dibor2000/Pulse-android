@@ -78,30 +78,35 @@ class NewsRssFetcher {
                             imageUrl = null
                         } else if (insideItem) {
                             when (tagName) {
-                                "title" -> title = parser.nextText()
+                                "title" -> {
+                                    title = readElementContent(parser)
+                                }
                                 "link" -> {
                                     val href = parser.getAttributeValue(null, "href")
-                                    link = if (!href.isNullOrBlank()) href else parser.nextText()
+                                    val text = readElementContent(parser)
+                                    link = if (!href.isNullOrBlank()) href else text
                                 }
-                                "description", "summary" -> {
-                                    description = parser.nextText()
+                                "description", "summary", "atom:summary" -> {
+                                    val desc = readElementContent(parser)
+                                    description = desc
                                     if (imageUrl == null) {
-                                        imageUrl = HtmlUtils.extractImageUrl(description)
+                                        imageUrl = HtmlUtils.extractImageUrl(desc)
                                     }
                                 }
-                                "content", "content:encoded" -> {
-                                    content = parser.nextText()
+                                "content", "content:encoded", "atom:content", "turbo:content", "yandex:full-text" -> {
+                                    val cnt = readElementContent(parser)
+                                    content = cnt
                                     if (imageUrl == null) {
-                                        imageUrl = HtmlUtils.extractImageUrl(content)
+                                        imageUrl = HtmlUtils.extractImageUrl(cnt)
                                     }
                                 }
                                 "pubdate", "published", "updated", "dc:date" -> {
-                                    pubDateStr = parser.nextText()
+                                    pubDateStr = readElementContent(parser)
                                 }
                                 "enclosure", "media:content", "media:thumbnail" -> {
                                     val url = parser.getAttributeValue(null, "url")
                                     val type = parser.getAttributeValue(null, "type")
-                                    if (!url.isNullOrBlank() && (type == null || type.startsWith("image") || url.contains(".jpg") || url.contains(".png") || url.contains(".webp"))) {
+                                    if (!url.isNullOrBlank() && (type == null || type.startsWith("image") || url.contains(".jpg") || url.contains(".png") || url.contains(".webp") || url.contains(".jpeg"))) {
                                         if (imageUrl == null) {
                                             imageUrl = url
                                         }
@@ -116,13 +121,24 @@ class NewsRssFetcher {
                             insideItem = false
 
                             val cleanTitle = HtmlUtils.cleanHtml(title)
-                            val cleanDesc = HtmlUtils.cleanHtml(if (description.isNotBlank()) description else content)
-                            val cleanContent = if (content.isNotBlank()) HtmlUtils.cleanHtml(content) else cleanDesc
+                            val cleanRawDesc = HtmlUtils.cleanHtml(description)
+                            val cleanRawContent = HtmlUtils.cleanHtml(content)
 
-                            if (cleanTitle.isNotBlank() && (link.isNotBlank() || cleanDesc.isNotBlank())) {
+                            // Pick best source for description and content
+                            val rawBody = cleanRawContent.ifBlank { cleanRawDesc }
+                            val cleanDesc = HtmlUtils.extractShortSummary(rawBody.ifBlank { cleanTitle })
+                            val richContent = HtmlUtils.ensureRichContent(
+                                existingContent = rawBody,
+                                title = cleanTitle,
+                                description = cleanDesc,
+                                sourceName = source.name,
+                                categoryName = source.category.displayName
+                            )
+
+                            if (cleanTitle.isNotBlank() && (link.isNotBlank() || richContent.isNotBlank())) {
                                 val publishedAt = TimeUtils.parseDate(pubDateStr)
                                 val articleId = generateId(link.ifBlank { cleanTitle })
-                                val readTime = HtmlUtils.estimateReadTime(cleanContent.ifBlank { cleanDesc })
+                                val readTime = HtmlUtils.estimateReadTime(richContent)
 
                                 val isBreaking = (System.currentTimeMillis() - publishedAt) < (30 * 60 * 1000) ||
                                         cleanTitle.contains("срочно", ignoreCase = true) ||
@@ -133,8 +149,8 @@ class NewsRssFetcher {
                                     NewsArticle(
                                         id = articleId,
                                         title = cleanTitle,
-                                        description = cleanDesc.take(280),
-                                        content = cleanContent,
+                                        description = cleanDesc,
+                                        content = richContent,
                                         link = link,
                                         sourceName = source.name,
                                         sourceUrl = source.url,
@@ -142,7 +158,8 @@ class NewsRssFetcher {
                                         category = source.category,
                                         publishedAt = publishedAt,
                                         isBreaking = isBreaking,
-                                        readTimeMinutes = readTime
+                                        readTimeMinutes = readTime,
+                                        topicId = null // Do not forcibly attach to topic on launch
                                     )
                                 )
                             }
@@ -156,6 +173,44 @@ class NewsRssFetcher {
         }
 
         return articles
+    }
+
+    /**
+     * Safely reads text across child elements, CDATA, and entity references
+     * without throwing XmlPullParserException when child tags like <p>, <img>, <a> are present.
+     */
+    private fun readElementContent(parser: XmlPullParser): String {
+        val sb = StringBuilder()
+        val startDepth = parser.depth
+        var event = parser.eventType
+
+        if (event == XmlPullParser.TEXT || event == XmlPullParser.CDSECT) {
+            sb.append(parser.text ?: "")
+        }
+
+        while (parser.next() != XmlPullParser.END_DOCUMENT) {
+            event = parser.eventType
+            if (event == XmlPullParser.END_TAG && parser.depth == startDepth) {
+                break
+            }
+            when (event) {
+                XmlPullParser.TEXT, XmlPullParser.CDSECT -> {
+                    sb.append(parser.text ?: "")
+                }
+                XmlPullParser.START_TAG -> {
+                    val subTag = parser.name?.lowercase() ?: ""
+                    if (subTag == "img") {
+                        val src = parser.getAttributeValue(null, "src")
+                        if (!src.isNullOrBlank()) {
+                            sb.append(" [img:$src] ")
+                        }
+                    } else if (subTag == "br" || subTag == "p") {
+                        sb.append("\n\n")
+                    }
+                }
+            }
+        }
+        return sb.toString()
     }
 
     private fun generateId(input: String): String {

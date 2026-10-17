@@ -454,8 +454,25 @@ fun TopicDetailTimelineView(
                 TimelineNodeItem(
                     event = event,
                     isLast = isLast,
-                    onOpenArticle = { articleId ->
-                        allArticles.find { it.id == articleId }?.let { onArticleClick(it) }
+                    onOpenEvent = {
+                        val matchingArticle = allArticles.find { it.id == event.articleId }
+                            ?: allArticles.find { it.title.contains(event.title.take(15), ignoreCase = true) }
+                            ?: NewsArticle(
+                                id = event.articleId ?: event.id,
+                                title = event.title,
+                                description = event.summary,
+                                content = "${event.summary}\n\nМатериал зафиксирован в рамках развития сюжета «${topic.title}». По данным издания «${event.sourceName}», событие квалифицировано как «${event.milestoneType.label}» и имеет существенное значение для общего контекста ситуации.\n\nПродолжается мониторинг оперативных сообщений и экспертных комментариев профильных ведомств.",
+                                link = "",
+                                sourceName = event.sourceName,
+                                sourceUrl = "",
+                                imageUrl = null,
+                                category = topic.category,
+                                publishedAt = event.timestamp,
+                                isBreaking = event.milestoneType == MilestoneType.BREAKING,
+                                readTimeMinutes = 2,
+                                topicId = topic.id
+                            )
+                        onArticleClick(matchingArticle)
                     }
                 )
             }
@@ -493,7 +510,7 @@ fun TopicDetailTimelineView(
 fun TimelineNodeItem(
     event: ChronologyEvent,
     isLast: Boolean,
-    onOpenArticle: (String) -> Unit,
+    onOpenEvent: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -532,7 +549,7 @@ fun TimelineNodeItem(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        // Event Card
+        // Event Card - whole card is clickable to open details
         Card(
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -540,8 +557,10 @@ fun TimelineNodeItem(
             modifier = Modifier
                 .weight(1f)
                 .padding(bottom = 16.dp)
+                .clickable { onOpenEvent() }
+                .testTag("timeline_event_${event.id}")
         ) {
-            Column(modifier = Modifier.padding(12.dp)) {
+            Column(modifier = Modifier.padding(14.dp)) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -565,7 +584,7 @@ fun TimelineNodeItem(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
                     text = event.title,
@@ -583,15 +602,28 @@ fun TimelineNodeItem(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                if (!event.articleId.isNullOrBlank()) {
-                    Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text(
-                        text = "Читать связанный материал →",
+                        text = event.sourceName,
                         fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.clickable { onOpenArticle(event.articleId) }
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "Подробнее о ситуации →",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
         }

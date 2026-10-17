@@ -92,8 +92,8 @@ object InitialNewsData {
                 title = "Квантовая революция: архитектура кубитов и сверхбыстрые процессоры",
                 summary = "Хроника разработки устойчивых к помехам квантовых микросхем нового поколения и их коммерческого тестирования",
                 category = NewsCategory.TECH,
-                isPinned = true,
-                articleIds = listOf("breaking_01", "tech_02"),
+                isPinned = false,
+                articleIds = listOf("breaking_01", "tech_02", "tech_q1"),
                 createdAt = now - 3 * 24 * 3600 * 1000,
                 updatedAt = now - 3 * 60 * 1000,
                 events = listOf(
@@ -105,7 +105,7 @@ object InitialNewsData {
                         timestamp = now - 2 * 24 * 3600 * 1000,
                         sourceName = "Хабр Наука",
                         milestoneType = MilestoneType.START,
-                        articleId = null
+                        articleId = "tech_q1"
                     ),
                     ChronologyEvent(
                         id = "ev_q2",
@@ -135,7 +135,7 @@ object InitialNewsData {
                 summary = "Развитие астрофизических открытий экзопланет и атмосферных аномалий телескопом Джеймс Уэбб",
                 category = NewsCategory.SCIENCE,
                 isPinned = false,
-                articleIds = listOf("breaking_02", "science_02"),
+                articleIds = listOf("breaking_02", "science_02", "science_s1"),
                 createdAt = now - 7 * 24 * 3600 * 1000,
                 updatedAt = now - 12 * 60 * 1000,
                 events = listOf(
@@ -147,7 +147,7 @@ object InitialNewsData {
                         timestamp = now - 5 * 24 * 3600 * 1000,
                         sourceName = "Naked Science",
                         milestoneType = MilestoneType.START,
-                        articleId = null
+                        articleId = "science_s1"
                     ),
                     ChronologyEvent(
                         id = "ev_s2",
@@ -155,9 +155,9 @@ object InitialNewsData {
                         title = "Фиксация спектральных полос метана и CO2",
                         summary = "Компьютерная обработка транзитных кривых подтвердила наличие плотной водородной оболочки.",
                         timestamp = now - 2 * 24 * 3600 * 1000,
-                        sourceName = "NASA Bulletin",
+                        sourceName = "Naked Science",
                         milestoneType = MilestoneType.DEVELOPMENT,
-                        articleId = null
+                        articleId = "science_02"
                     ),
                     ChronologyEvent(
                         id = "ev_s3",
@@ -177,7 +177,7 @@ object InitialNewsData {
                 summary = "Хронология межгосударственных инициатив по переходу на возобновляемые ресурсы и модернизацию сетей",
                 category = NewsCategory.WORLD,
                 isPinned = false,
-                articleIds = listOf("world_01", "biz_01"),
+                articleIds = listOf("world_01", "biz_01", "world_c1"),
                 createdAt = now - 10 * 24 * 3600 * 1000,
                 updatedAt = now - 45 * 60 * 1000,
                 events = listOf(
@@ -189,7 +189,7 @@ object InitialNewsData {
                         timestamp = now - 6 * 24 * 3600 * 1000,
                         sourceName = "BBC Мир",
                         milestoneType = MilestoneType.START,
-                        articleId = null
+                        articleId = "world_c1"
                     ),
                     ChronologyEvent(
                         id = "ev_c2",
@@ -223,37 +223,67 @@ object InitialNewsData {
                 id = "breaking_01",
                 title = "Квантовые вычисления: исследователи представили сверхбыстрый процессор нового поколения",
                 description = "Новая архитектура кубитов позволила снизить уровень шума на порядок и ускорить решение комплексных задач оптимизации в тысячи раз.",
-                content = "Международная исследовательская группа совершила ключевой прорыв в области квантовых технологий. Разработанный чип использует топологические кубиты, устойчивые к внешним электромагнитным помехам. Это открывает дорогу к моделированию сложнейших молекул для создания новых лекарств и сверхпроводников при комнатной температуре. Первые коммерческие тесты начнутся уже в следующем квартале.",
+                content = "Международная исследовательская группа совершила ключевой прорыв в области квантовых технологий. Разработанный чип использует топологические кубиты, устойчивые к внешним электромагнитным помехам.\n\nЭто открывает дорогу к моделированию сложнейших молекул для создания новых лекарств и сверхпроводников при комнатной температуре. Первые коммерческие тесты начнутся уже в следующем квартале.",
                 link = "https://habr.com/ru/news/quantum-breakthrough/",
                 sourceName = "Хабр Наука",
                 sourceUrl = "https://habr.com",
                 imageUrl = "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=800&auto=format&fit=crop&q=80",
                 category = NewsCategory.TECH,
-                publishedAt = now - 3 * 60 * 1000, // 3 minutes ago
+                publishedAt = now - 3 * 60 * 1000,
                 isBreaking = true,
                 readTimeMinutes = 3,
-                topicId = "topic_quantum"
+                topicId = null
+            ),
+            NewsArticle(
+                id = "tech_q1",
+                title = "Теоретическое обоснование топологических кубитов",
+                description = "Международная группа физиков опубликовала математическую модель снижения электромагнитного шума в квантовых системах.",
+                content = "В препринте ведущих мировых институтов представлено доказательство стабильности кубитов на основе майорановских фермионов. Согласно расчётам, тепловые флуктуации снижаются более чем на 95% при температурах около абсолютного нуля.\n\nЭта работа заложила фундамент для последующей литографии кремниево-графеновых чипов и открыла практический путь к коммерческим квантовым вычислениям без дорогостоящих многоуровневых систем коррекции ошибок.",
+                link = "https://habr.com/ru/news/topological-qubits/",
+                sourceName = "Хабр Наука",
+                sourceUrl = "https://habr.com",
+                imageUrl = "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=800&auto=format&fit=crop&q=80",
+                category = NewsCategory.TECH,
+                publishedAt = now - 2 * 24 * 3600 * 1000,
+                isBreaking = false,
+                readTimeMinutes = 3,
+                topicId = null
             ),
             NewsArticle(
                 id = "breaking_02",
                 title = "Космический телескоп «Джеймс Уэбб» зафиксировал следы водяного пара в атмосфере экзопланеты",
                 description = "Планета находится в обитаемой зоне своей звезды, а спектральный анализ показал присутствие метана и углекислого газа.",
-                content = "Астрофизики опубликовали сенсационные данные спектроскопии экзопланеты K2-18b. Телескоп «Джеймс Уэбб» обнаружил явные сигнатуры водяного пара и углеродсодержащих соединений. Планета относится к классу субнептунов, обладающих водородной атмосферой и, возможно, океаном жидкой воды. Учёные готовят серию дополнительных наблюдений в инфракрасном диапазоне.",
+                content = "Астрофизики опубликовали сенсационные данные спектроскопии экзопланеты K2-18b. Телескоп «Джеймс Уэбб» обнаружил явные сигнатуры водяного пара и углеродсодержащих соединений.\n\nПланета относится к классу субнептунов, обладающих водородной атмосферой и, возможно, океаном жидкой воды. Учёные готовят серию дополнительных наблюдений в инфракрасном диапазоне.",
                 link = "https://naked-science.ru/article/astronomy/webb-exoplanet",
                 sourceName = "Naked Science",
                 sourceUrl = "https://naked-science.ru",
                 imageUrl = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=80",
                 category = NewsCategory.SCIENCE,
-                publishedAt = now - 12 * 60 * 1000, // 12 minutes ago
+                publishedAt = now - 12 * 60 * 1000,
                 isBreaking = true,
                 readTimeMinutes = 4,
-                topicId = "topic_space"
+                topicId = null
+            ),
+            NewsArticle(
+                id = "science_s1",
+                title = "Калибровка инфракрасного спектрометра NIRSpec телескопа «Джеймс Уэбб»",
+                description = "Орбитальная обсерватория завершила тестовые экспозиции в созвездии Льва и перешла к глубокому анализу экзопланет.",
+                content = "Инженеры миссии NASA и ESA завершили тонкую настройку микрозатворов спектрометра NIRSpec. Устройство способно улавливать единичные фотоны инфракрасного излучения сквозь плотные газопылевые облака.\n\nИменно эта калибровка позволила обсерватории нацелиться на тусклые звёздные системы и зафиксировать тончайшие линии поглощения химических элементов в атмосферах далеких миров.",
+                link = "https://naked-science.ru/article/astronomy/nirspec-calibration",
+                sourceName = "Naked Science",
+                sourceUrl = "https://naked-science.ru",
+                imageUrl = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=80",
+                category = NewsCategory.SCIENCE,
+                publishedAt = now - 5 * 24 * 3600 * 1000,
+                isBreaking = false,
+                readTimeMinutes = 3,
+                topicId = null
             ),
             NewsArticle(
                 id = "tech_01",
                 title = "Вышла новая версия языка Kotlin с ускоренным компилятором K2 и новыми возможностями Compose",
                 description = "Обновление ускоряет сборку проектов на 40% и добавляет глубокую оптимизацию генерации кода для мобильных платформ.",
-                content = "Команда разработчиков объявила о масштабном обновлении экосистемы Kotlin. Компилятор K2 стал доступен по умолчанию, обеспечивая значительный прирост производительности на многопоточных сборочных серверах. В Jetpack Compose улучшено инкрементальное обновление UI, управление ресурсами и интеграция с мультиплатформенными библиотеками.",
+                content = "Команда разработчиков объявила о масштабном обновлении экосистемы Kotlin. Компилятор K2 стал доступен по умолчанию, обеспечивая значительный прирост производительности на многопоточных сборочных серверах.\n\nВ Jetpack Compose улучшено инкрементальное обновление UI, управление ресурсами и интеграция с мультиплатформенными библиотеками.",
                 link = "https://habr.com/ru/post/kotlin-update/",
                 sourceName = "Хабр Разработка",
                 sourceUrl = "https://habr.com",
@@ -268,7 +298,7 @@ object InitialNewsData {
                 id = "biz_01",
                 title = "Мировые центробанки наращивают золотые резервы на фоне трансформации торговых расчётов",
                 description = "Доля золота в международных резервах достигла рекордных значений за последние 15 лет благодаря диверсификации активов.",
-                content = "Аналитики инвестиционных банков отмечают продолжающийся тренд на дедолларизацию расчетов между развивающимися экономиками. Центральные банки за последние 6 месяцев закупили свыше 400 тонн драгоценного металла. Одновременно растут объемы взаиморасчетов в национальных валютах и цифровых финансовых активах.",
+                content = "Аналитики инвестиционных банков отмечают продолжающийся тренд на дедолларизацию расчетов между развивающимися экономиками. Центральные банки за последние 6 месяцев закупили свыше 400 тонн драгоценного металла.\n\nОдновременно растут объемы взаиморасчетов в национальных валютах и цифровых финансовых активах.",
                 link = "https://lenta.ru/rubrics/economics/",
                 sourceName = "Лента Финансы",
                 sourceUrl = "https://lenta.ru",
@@ -277,7 +307,22 @@ object InitialNewsData {
                 publishedAt = now - 45 * 60 * 1000,
                 isBreaking = false,
                 readTimeMinutes = 3,
-                topicId = "topic_climate"
+                topicId = null
+            ),
+            NewsArticle(
+                id = "world_c1",
+                title = "Открытие международного энергетического форума по декарбонизации",
+                description = "Делегации более 100 стран начали обсуждение перехода промышленности на безуглеродные технологии.",
+                content = "На открытии глобального саммита министры энергетики и ведущие климатологи представили сводный доклад о темпах потепления и возможностях модернизации энергетической инфраструктуры.\n\nФорум стал отправной точкой для выработки юридически обязывающих нормативов и привлечения институциональных инвестиций в зелёную энергетику.",
+                link = "https://bbc.com/russian/news/energy-forum",
+                sourceName = "BBC Мир",
+                sourceUrl = "https://bbc.com",
+                imageUrl = "https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=800&auto=format&fit=crop&q=80",
+                category = NewsCategory.WORLD,
+                publishedAt = now - 6 * 24 * 3600 * 1000,
+                isBreaking = false,
+                readTimeMinutes = 3,
+                topicId = null
             ),
             NewsArticle(
                 id = "world_01",
@@ -292,7 +337,7 @@ object InitialNewsData {
                 publishedAt = now - 65 * 60 * 1000,
                 isBreaking = false,
                 readTimeMinutes = 4,
-                topicId = "topic_climate"
+                topicId = null
             ),
             NewsArticle(
                 id = "games_01",
@@ -322,7 +367,7 @@ object InitialNewsData {
                 publishedAt = now - 110 * 60 * 1000,
                 isBreaking = false,
                 readTimeMinutes = 5,
-                topicId = "topic_space"
+                topicId = null
             ),
             NewsArticle(
                 id = "tech_02",
@@ -337,7 +382,7 @@ object InitialNewsData {
                 publishedAt = now - 140 * 60 * 1000,
                 isBreaking = false,
                 readTimeMinutes = 3,
-                topicId = "topic_quantum"
+                topicId = null
             )
         )
     }

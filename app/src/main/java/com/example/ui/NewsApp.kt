@@ -72,6 +72,10 @@ fun NewsApp(
     val personalization by viewModel.personalization.collectAsState()
     val isPersonalizationDialogOpen by viewModel.isPersonalizationDialogOpen.collectAsState()
 
+    val targetLanguage by viewModel.targetLanguage.collectAsState()
+    val translatedArticles by viewModel.translatedArticles.collectAsState()
+    val isTranslating by viewModel.isTranslating.collectAsState()
+
     val topics by viewModel.topics.collectAsState()
     val selectedTopic by viewModel.selectedTopic.collectAsState()
     val inAppNotifications by viewModel.inAppNotifications.collectAsState()
@@ -271,7 +275,9 @@ fun NewsApp(
                 NavTab.SETTINGS -> {
                     SettingsScreen(
                         autoRefreshIntervalSec = autoRefreshIntervalSec,
+                        targetLanguage = targetLanguage,
                         onIntervalChange = { viewModel.setAutoRefreshInterval(it) },
+                        onTargetLanguageChange = { viewModel.setTargetLanguage(it) },
                         onClearCache = { viewModel.clearCache() },
                         onOpenPersonalization = { viewModel.setPersonalizationDialogVisible(true) }
                     )
@@ -290,6 +296,10 @@ fun NewsApp(
                         fontSizeSp = readerFontSizeSp,
                         isPlayingAudio = isAudioPlaying,
                         topics = topics,
+                        translatedArticle = translatedArticles[article.id],
+                        isTranslating = isTranslating[article.id] ?: false,
+                        targetLanguageCode = targetLanguage,
+                        onToggleTranslate = { viewModel.toggleTranslateArticle(it) },
                         onBack = { viewModel.closeArticle() },
                         onBookmarkToggle = { viewModel.toggleBookmark(it) },
                         onAudioPlay = { viewModel.playAudio(it) },
