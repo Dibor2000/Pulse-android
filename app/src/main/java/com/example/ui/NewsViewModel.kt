@@ -75,6 +75,12 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
     val sources: StateFlow<List<NewsSource>> = repository.sources
     val lastUpdated: StateFlow<Long> = repository.lastUpdated
 
+    private val _personalization = MutableStateFlow(com.example.data.model.UserPersonalization())
+    val personalization: StateFlow<com.example.data.model.UserPersonalization> = _personalization.asStateFlow()
+
+    private val _isPersonalizationDialogOpen = MutableStateFlow(false)
+    val isPersonalizationDialogOpen: StateFlow<Boolean> = _isPersonalizationDialogOpen.asStateFlow()
+
     val allArticles = repository.allArticles.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
@@ -87,12 +93,16 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
         emptyList()
     )
 
-    val filteredArticles = combine(
+    val filteredArticles: StateFlow<List<NewsArticle>> = combine(
         repository.allArticles,
         _selectedCategory,
         _searchQuery,
-        _filterUnreadOnly
-    ) { articles, category, query, unreadOnly ->
+        combine(_filterUnreadOnly, _personalization, repository.sources) { unread, prefs, srcs ->
+            Triple(unread, prefs, srcs)
+        }
+    ) { articles, category, query, (unreadOnly, userPrefs, currentSources) ->
+        val favoriteSourceNames = currentSources.filter { it.isFavorite || userPrefs.favoriteSourceIds.contains(it.id) }.map { it.name }.toSet()
+
         articles.filter { article ->
             val matchesCategory = (category == NewsCategory.ALL || article.category == category)
             val matchesQuery = query.isBlank() ||
@@ -101,7 +111,20 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
                     article.sourceName.contains(query, ignoreCase = true)
             val matchesUnread = !unreadOnly || !article.isRead
 
-            matchesCategory && matchesQuery && matchesUnread
+            val matchesPersonalization = if (!userPrefs.isPersonalizedFeedActive) {
+                true
+            } else {
+                val matchesCategoryPref = userPrefs.selectedCategoryNames.contains(article.category.name)
+                val matchesSourcePref = favoriteSourceNames.any { prefName ->
+                    article.sourceName.contains(prefName, ignoreCase = true) ||
+                    prefName.contains(article.sourceName, ignoreCase = true)
+                } || userPrefs.favoriteSourceIds.any { id ->
+                    article.id.contains(id, ignoreCase = true) || article.sourceName.lowercase().contains(id.substringBefore("_"))
+                }
+                matchesCategoryPref || matchesSourcePref
+            }
+
+            matchesCategory && matchesQuery && matchesUnread && matchesPersonalization
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -172,6 +195,45 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
 
     fun toggleSource(sourceId: String) {
         repository.toggleSource(sourceId)
+    }
+
+    fun toggleFavoriteSource(sourceId: String) {
+        repository.toggleFavoriteSource(sourceId)
+        val current = _personalization.value.favoriteSourceIds.toMutableSet()
+        if (current.contains(sourceId)) {
+            current.remove(sourceId)
+        } else {
+            current.add(sourceId)
+        }
+        _personalization.value = _personalization.value.copy(favoriteSourceIds = current)
+    }
+
+    fun togglePersonalizedFeed() {
+        _personalization.value = _personalization.value.copy(
+            isPersonalizedFeedActive = !_personalization.value.isPersonalizedFeedActive
+        )
+    }
+
+    fun setPersonalizedFeedActive(active: Boolean) {
+        _personalization.value = _personalization.value.copy(
+            isPersonalizedFeedActive = active
+        )
+    }
+
+    fun togglePreferredCategory(categoryName: String) {
+        val current = _personalization.value.selectedCategoryNames.toMutableSet()
+        if (current.contains(categoryName)) {
+            if (current.size > 1) {
+                current.remove(categoryName)
+            }
+        } else {
+            current.add(categoryName)
+        }
+        _personalization.value = _personalization.value.copy(selectedCategoryNames = current)
+    }
+
+    fun setPersonalizationDialogVisible(visible: Boolean) {
+        _isPersonalizationDialogOpen.value = visible
     }
 
     fun selectTopic(topic: com.example.data.model.TopicStory?) {

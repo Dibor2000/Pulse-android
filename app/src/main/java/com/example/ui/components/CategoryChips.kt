@@ -27,12 +27,19 @@ import androidx.compose.ui.unit.sp
 import com.example.data.model.NewsCategory
 import com.example.ui.theme.NewsCrimson
 
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.IconButton
+
 @Composable
 fun CategoryChips(
     selectedCategory: NewsCategory,
     filterUnreadOnly: Boolean,
+    isPersonalizedActive: Boolean = false,
     onCategorySelect: (NewsCategory) -> Unit,
     onToggleUnreadFilter: () -> Unit,
+    onTogglePersonalized: () -> Unit = {},
+    onOpenPersonalizationDialog: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -44,6 +51,48 @@ fun CategoryChips(
             .horizontalScroll(scrollState)
             .padding(horizontal = 16.dp, vertical = 6.dp)
     ) {
+        // Personalized Feed "Моя лента" chip
+        FilterChip(
+            selected = isPersonalizedActive,
+            onClick = onTogglePersonalized,
+            label = {
+                Text(
+                    text = "Моя лента",
+                    fontSize = 12.sp,
+                    fontWeight = if (isPersonalizedActive) FontWeight.Bold else FontWeight.Normal
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp)
+                )
+            },
+            colors = FilterChipDefaults.filterChipColors(
+                selectedContainerColor = NewsCrimson,
+                selectedLabelColor = androidx.compose.ui.graphics.Color.White,
+                selectedLeadingIconColor = androidx.compose.ui.graphics.Color.White
+            ),
+            modifier = Modifier.testTag("filter_personalized_chip")
+        )
+
+        IconButton(
+            onClick = onOpenPersonalizationDialog,
+            modifier = Modifier
+                .size(32.dp)
+                .testTag("open_personalization_button")
+        ) {
+            Icon(
+                imageVector = Icons.Default.Tune,
+                contentDescription = "Настроить темы и источники",
+                tint = if (isPersonalizedActive) NewsCrimson else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(16.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(4.dp))
+
         // Unread only toggle chip
         FilterChip(
             selected = filterUnreadOnly,

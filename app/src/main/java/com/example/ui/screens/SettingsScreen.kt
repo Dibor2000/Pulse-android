@@ -38,11 +38,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.theme.NewsCrimson
 
+import androidx.compose.material.icons.filled.Android
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.Button
+
 @Composable
 fun SettingsScreen(
     autoRefreshIntervalSec: Int,
     onIntervalChange: (Int) -> Unit,
     onClearCache: () -> Unit,
+    onOpenPersonalization: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -81,6 +86,53 @@ fun SettingsScreen(
                 .padding(16.dp)
                 .verticalScroll(scrollState)
         ) {
+            // Personalization card
+            Card(
+                shape = RoundedCornerShape(14.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Tune,
+                            contentDescription = null,
+                            tint = NewsCrimson,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Персонализация ленты новостей",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = "Выберите приоритетные издания (BBC, CNN, Reuters, Хабр и др.) и интересные вам категории для формирования индивидуальной ленты «Моя лента».",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    Button(
+                        onClick = onOpenPersonalization,
+                        colors = ButtonDefaults.buttonColors(containerColor = NewsCrimson),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("open_personalization_from_settings")
+                    ) {
+                        Text("Настроить мои темы и источники")
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             // Auto refresh interval card
             Card(
                 shape = RoundedCornerShape(14.dp),
@@ -147,6 +199,42 @@ fun SettingsScreen(
                             )
                         }
                     }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // APK Installation instruction card
+            Card(
+                shape = RoundedCornerShape(14.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Android,
+                            contentDescription = null,
+                            tint = NewsCrimson,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Установка приложения на телефон (APK)",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "1. Скомпилированный установочный файл APK находится в сборке проекта по пути:\napp/build/outputs/apk/debug/app-debug.apk\n\n2. Скачайте APK файл или экспортируйте проект через меню AI Studio.\n\n3. Передайте файл на телефон (через USB, Telegram или Google Диск).\n\n4. Откройте файл на Android-устройстве и при запросе выберите «Разрешить установку из неизвестных источников».\n\n5. Нажмите «Установить» — приложение со всеми функциями появится на рабочем столе телефона!",
+                        fontSize = 12.sp,
+                        lineHeight = 18.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 
@@ -225,7 +313,7 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "«Новостной Пульс» v1.0\nАгрегатор новостей с поддержкой чтения в реальном времени, синтезатора речи (TTS), автономного кэширования в Room и подборки по интересам.",
+                        text = "«Новостной Пульс» v1.0\nАгрегатор новостей с поддержкой чтения в реальном времени, 60+ мировых источников, хронологии событий, синтезатора речи (TTS), автономного кэширования в Room и персональной ленты.",
                         fontSize = 12.sp,
                         lineHeight = 18.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant

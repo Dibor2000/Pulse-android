@@ -1,6 +1,7 @@
 package com.example.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -52,8 +53,11 @@ fun NewsFeedScreen(
     filterUnreadOnly: Boolean,
     layoutMode: LayoutMode,
     isRefreshing: Boolean,
+    isPersonalizedActive: Boolean = false,
     onCategorySelect: (NewsCategory) -> Unit,
     onToggleUnreadFilter: () -> Unit,
+    onTogglePersonalized: () -> Unit = {},
+    onOpenPersonalizationDialog: () -> Unit = {},
     onArticleClick: (NewsArticle) -> Unit,
     onBookmarkToggle: (String) -> Unit,
     onAudioPlay: (NewsArticle) -> Unit,
@@ -69,13 +73,48 @@ fun NewsFeedScreen(
             )
         }
 
-        // Category & Filter chips
+        // Category & Filter chips with personalization
         CategoryChips(
             selectedCategory = selectedCategory,
             filterUnreadOnly = filterUnreadOnly,
+            isPersonalizedActive = isPersonalizedActive,
             onCategorySelect = onCategorySelect,
-            onToggleUnreadFilter = onToggleUnreadFilter
+            onToggleUnreadFilter = onToggleUnreadFilter,
+            onTogglePersonalized = onTogglePersonalized,
+            onOpenPersonalizationDialog = onOpenPersonalizationDialog
         )
+
+        if (isPersonalizedActive) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 2.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(NewsCrimson.copy(alpha = 0.08f))
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = "⭐ Моя лента: формируется на основе ваших избранных СМИ и тем",
+                        fontSize = 11.sp,
+                        color = NewsCrimson,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = "Настроить",
+                        fontSize = 11.sp,
+                        color = NewsCrimson,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable { onOpenPersonalizationDialog() }
+                    )
+                }
+            }
+        }
 
         // Loading bar when refreshing
         if (isRefreshing && articles.isNotEmpty()) {

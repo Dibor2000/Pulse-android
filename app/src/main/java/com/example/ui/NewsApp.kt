@@ -46,6 +46,7 @@ import com.example.R
 import com.example.data.model.NewsArticle
 import com.example.ui.components.CreateTopicDialog
 import com.example.ui.components.NotificationCenterDialog
+import com.example.ui.components.PersonalizationDialog
 import com.example.ui.components.TopNewsBar
 import com.example.ui.screens.ArticleReaderScreen
 import com.example.ui.screens.BookmarksScreen
@@ -68,6 +69,8 @@ fun NewsApp(
     val breakingNews by viewModel.breakingNews.collectAsState()
     val bookmarkedArticles by viewModel.bookmarkedArticles.collectAsState()
     val sources by viewModel.sources.collectAsState()
+    val personalization by viewModel.personalization.collectAsState()
+    val isPersonalizationDialogOpen by viewModel.isPersonalizationDialogOpen.collectAsState()
 
     val topics by viewModel.topics.collectAsState()
     val selectedTopic by viewModel.selectedTopic.collectAsState()
@@ -223,8 +226,11 @@ fun NewsApp(
                         filterUnreadOnly = filterUnreadOnly,
                         layoutMode = layoutMode,
                         isRefreshing = isRefreshing,
+                        isPersonalizedActive = personalization.isPersonalizedFeedActive,
                         onCategorySelect = { viewModel.selectCategory(it) },
                         onToggleUnreadFilter = { viewModel.toggleFilterUnreadOnly() },
+                        onTogglePersonalized = { viewModel.togglePersonalizedFeed() },
+                        onOpenPersonalizationDialog = { viewModel.setPersonalizationDialogVisible(true) },
                         onArticleClick = { viewModel.openArticle(it) },
                         onBookmarkToggle = { viewModel.toggleBookmark(it) },
                         onAudioPlay = { viewModel.playAudio(it) },
@@ -257,7 +263,8 @@ fun NewsApp(
                 NavTab.SOURCES -> {
                     SourcesScreen(
                         sources = sources,
-                        onToggleSource = { viewModel.toggleSource(it) }
+                        onToggleSource = { viewModel.toggleSource(it) },
+                        onToggleFavorite = { viewModel.toggleFavoriteSource(it) }
                     )
                 }
 
@@ -265,7 +272,8 @@ fun NewsApp(
                     SettingsScreen(
                         autoRefreshIntervalSec = autoRefreshIntervalSec,
                         onIntervalChange = { viewModel.setAutoRefreshInterval(it) },
-                        onClearCache = { viewModel.clearCache() }
+                        onClearCache = { viewModel.clearCache() },
+                        onOpenPersonalization = { viewModel.setPersonalizationDialogVisible(true) }
                     )
                 }
             }
@@ -325,6 +333,18 @@ fun NewsApp(
                     onOpenArticle = { articleId ->
                         allArticles.find { it.id == articleId }?.let { viewModel.openArticle(it) }
                     }
+                )
+            }
+
+            // User Personalization Dialog
+            if (isPersonalizationDialogOpen) {
+                PersonalizationDialog(
+                    personalization = personalization,
+                    sources = sources,
+                    onToggleActive = { viewModel.setPersonalizedFeedActive(it) },
+                    onToggleCategory = { viewModel.togglePreferredCategory(it) },
+                    onToggleFavoriteSource = { viewModel.toggleFavoriteSource(it) },
+                    onDismiss = { viewModel.setPersonalizationDialogVisible(false) }
                 )
             }
         }

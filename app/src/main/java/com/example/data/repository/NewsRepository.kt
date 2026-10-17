@@ -168,6 +168,16 @@ class NewsRepository(
         }
     }
 
+    fun toggleFavoriteSource(sourceId: String) {
+        _sources.value = _sources.value.map { source ->
+            if (source.id == sourceId) {
+                source.copy(isFavorite = !source.isFavorite)
+            } else {
+                source
+            }
+        }
+    }
+
     fun togglePinTopic(topicId: String, context: android.content.Context) {
         var newlyPinnedTopic: com.example.data.model.TopicStory? = null
         _topics.value = _topics.value.map { topic ->
