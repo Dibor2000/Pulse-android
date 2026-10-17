@@ -43,17 +43,34 @@ import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.Button
 
+import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.example.util.TimeUtils
+
 @Composable
 fun SettingsScreen(
     autoRefreshIntervalSec: Int,
     targetLanguage: String = "ru",
+    isBackgroundSyncEnabled: Boolean = true,
+    backgroundSyncIntervalMinutes: Int = 60,
+    lastBackgroundSyncTime: Long = 0L,
     onIntervalChange: (Int) -> Unit,
     onTargetLanguageChange: (String) -> Unit = {},
+    onBackgroundSyncEnabledChange: (Boolean) -> Unit = {},
+    onBackgroundSyncIntervalChange: (Int) -> Unit = {},
+    onTriggerBackgroundSyncNow: ((Int) -> Unit) -> Unit = {},
     onClearCache: () -> Unit,
     onOpenPersonalization: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
+    var isTestingSync by remember { mutableStateOf(false) }
+    var syncResultText by remember { mutableStateOf<String?>(null) }
 
     Column(modifier = modifier.fillMaxSize()) {
         Surface(
@@ -199,6 +216,146 @@ fun SettingsScreen(
                                 fontSize = 13.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                 color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Background periodic sync card
+            Card(
+                shape = RoundedCornerShape(14.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            Icon(
+                                imageVector = Icons.Default.Sync,
+                                contentDescription = null,
+                                tint = NewsCrimson,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Фоновое авто-обновление новостей",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Switch(
+                            checked = isBackgroundSyncEnabled,
+                            onCheckedChange = onBackgroundSyncEnabledChange,
+                            colors = SwitchDefaults.colors(checkedThumbColor = NewsCrimson),
+                            modifier = Modifier.testTag("background_sync_switch")
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = "Приложение может автоматически загружать свежие новости в фоне с заданной периодичностью и уведомлять о появлении важных публикаций.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    if (isBackgroundSyncEnabled) {
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        Text(
+                            text = "Периодичность обновления в фоне:",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        val bgOptions = listOf(
+                            15 to "Каждые 15 минут",
+                            30 to "Каждые 30 минут",
+                            60 to "Каждый час (Рекомендуется)",
+                            120 to "Каждые 2 часа",
+                            360 to "Каждые 6 часов"
+                        )
+
+                        bgOptions.forEach { (minutes, label) ->
+                            val isSelected = backgroundSyncIntervalMinutes == minutes
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onBackgroundSyncIntervalChange(minutes) }
+                                    .padding(vertical = 6.dp)
+                                    .testTag("bg_interval_$minutes")
+                            ) {
+                                Icon(
+                                    imageVector = if (isSelected) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
+                                    contentDescription = null,
+                                    tint = if (isSelected) NewsCrimson else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = label,
+                                    fontSize = 13.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (isSelected) NewsCrimson else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        if (lastBackgroundSyncTime > 0L) {
+                            Text(
+                                text = "⏱ Последнее обновление в фоне: ${TimeUtils.formatRelativeTime(lastBackgroundSyncTime)}",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else {
+                            Text(
+                                text = "⏱ Фоновое обновление активно и ожидает первого запуска",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        OutlinedButton(
+                            onClick = {
+                                isTestingSync = true
+                                syncResultText = null
+                                onTriggerBackgroundSyncNow { count ->
+                                    isTestingSync = false
+                                    syncResultText = if (count > 0) "Успешно: загружено $count материалов в фоне!" else "Синхронизация завершена (новых статей нет)"
+                                }
+                            },
+                            enabled = !isTestingSync,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("test_background_sync_button")
+                        ) {
+                            Text(if (isTestingSync) "Выполняется фоновое обновление..." else "Проверить обновление сейчас")
+                        }
+
+                        syncResultText?.let { result ->
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = result,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }

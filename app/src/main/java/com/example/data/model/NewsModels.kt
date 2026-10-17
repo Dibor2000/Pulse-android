@@ -80,6 +80,7 @@ data class TopicStory(
     val summary: String,
     val category: NewsCategory,
     val isPinned: Boolean = false,
+    val isArchived: Boolean = false,
     val events: List<ChronologyEvent> = emptyList(),
     val articleIds: List<String> = emptyList(),
     val createdAt: Long = System.currentTimeMillis(),

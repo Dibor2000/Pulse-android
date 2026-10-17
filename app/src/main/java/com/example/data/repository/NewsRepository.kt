@@ -2,6 +2,8 @@ package com.example.data.repository
 
 import com.example.data.local.ArticleDao
 import com.example.data.local.ArticleEntity
+import com.example.data.local.TopicDao
+import com.example.data.local.TopicEntity
 import com.example.data.model.ChronologyEvent
 import com.example.data.model.MilestoneType
 import com.example.data.model.NewsArticle
@@ -10,6 +12,7 @@ import com.example.data.model.NewsSource
 import com.example.data.model.TopicStory
 import com.example.data.remote.InitialNewsData
 import com.example.data.remote.NewsRssFetcher
+import com.example.util.NewsPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -31,15 +34,29 @@ import kotlinx.coroutines.withContext
 
 class NewsRepository(
     private val articleDao: ArticleDao,
+    private val topicDao: TopicDao,
+    val preferences: NewsPreferences,
     private val rssFetcher: NewsRssFetcher = NewsRssFetcher(),
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) {
 
-    private val _sources = MutableStateFlow(InitialNewsData.getDefaultSources())
+    private val _sources = MutableStateFlow(
+        run {
+            val enabledIds = preferences.getEnabledSourceIds()
+            val favoriteIds = preferences.getFavoriteSourceIds()
+            InitialNewsData.getDefaultSources().map { source ->
+                source.copy(
+                    isEnabled = enabledIds.contains(source.id),
+                    isFavorite = favoriteIds.contains(source.id)
+                )
+            }
+        }
+    )
     val sources: StateFlow<List<NewsSource>> = _sources.asStateFlow()
 
-    private val _topics = MutableStateFlow(InitialNewsData.getDefaultTopics())
-    val topics: StateFlow<List<TopicStory>> = _topics.asStateFlow()
+    val topics: Flow<List<TopicStory>> = topicDao.getAllTopics().map { entities ->
+        entities.map { it.toDomain() }
+    }
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
@@ -198,6 +215,8 @@ class NewsRepository(
                 source
             }
         }
+        val enabledIds = _sources.value.filter { it.isEnabled }.map { it.id }.toSet()
+        preferences.setEnabledSourceIds(enabledIds)
         scope.launch {
             refreshFeeds()
         }
@@ -211,41 +230,58 @@ class NewsRepository(
                 source
             }
         }
+        val favoriteIds = _sources.value.filter { it.isFavorite }.map { it.id }.toSet()
+        preferences.setFavoriteSourceIds(favoriteIds)
+    }
+
+    fun deleteTopic(topicId: String) {
+        scope.launch {
+            topicDao.deleteTopic(topicId)
+            try {
+                val articles = articleDao.getAllArticles().first()
+                articles.filter { it.topicId == topicId }.forEach { article ->
+                    articleDao.updateArticleTopic(article.id, null)
+                }
+            } catch (_: Exception) {}
+        }
+    }
+
+    fun archiveTopic(topicId: String, isArchived: Boolean) {
+        scope.launch {
+            topicDao.updateArchived(topicId, isArchived)
+        }
     }
 
     fun togglePinTopic(topicId: String, context: android.content.Context) {
-        var newlyPinnedTopic: com.example.data.model.TopicStory? = null
-        _topics.value = _topics.value.map { topic ->
-            if (topic.id == topicId) {
-                val nextPinned = !topic.isPinned
-                val updated = topic.copy(isPinned = nextPinned)
-                if (nextPinned) newlyPinnedTopic = updated
-                updated
-            } else {
-                topic
-            }
-        }
+        scope.launch {
+            val entity = topicDao.getTopicById(topicId) ?: return@launch
+            val nextPinned = !entity.isPinned
+            topicDao.updatePinned(topicId, nextPinned)
 
-        newlyPinnedTopic?.let { topic ->
-            com.example.util.NotificationHelper.sendNotification(
-                context = context,
-                title = "📌 Тема закреплена для отслеживания",
-                message = "Вы подписались на обновления по сюжету «${topic.title}». Мы пришлем уведомление при появлении новых материалов.",
-                topicTitle = topic.title
-            )
+            if (nextPinned) {
+                com.example.util.NotificationHelper.sendNotification(
+                    context = context,
+                    title = "📌 Сюжет закреплен для отслеживания",
+                    message = "Вы подписались на обновления по сюжету «${entity.title}». Мы пришлем уведомление при появлении новых материалов.",
+                    topicTitle = entity.title
+                )
+            }
         }
     }
 
     fun sendTestNotification(topicId: String, context: android.content.Context) {
-        val topic = _topics.value.find { it.id == topicId } ?: return
-        val lastEvent = topic.events.lastOrNull()
-        com.example.util.NotificationHelper.sendNotification(
-            context = context,
-            title = "🔴 Молния: «${topic.title.take(35)}...»",
-            message = lastEvent?.summary ?: "Новое развитие событий по отслеживаемому сюжету.",
-            topicTitle = topic.title,
-            articleId = lastEvent?.articleId
-        )
+        scope.launch {
+            val entity = topicDao.getTopicById(topicId) ?: return@launch
+            val domain = entity.toDomain()
+            val lastEvent = domain.events.lastOrNull()
+            com.example.util.NotificationHelper.sendNotification(
+                context = context,
+                title = "🔴 Молния: «${domain.title.take(35)}...»",
+                message = lastEvent?.summary ?: "Новое развитие событий по отслеживаемому сюжету.",
+                topicTitle = domain.title,
+                articleId = lastEvent?.articleId
+            )
+        }
     }
 
     fun createTopic(
@@ -276,15 +312,15 @@ class NewsRepository(
             title = title,
             summary = summary,
             category = category,
-            isPinned = true,
+            isPinned = false,
+            isArchived = false,
             events = initialEvents,
             articleIds = if (initialArticle != null) listOf(initialArticle.id) else emptyList()
         )
 
-        _topics.value = listOf(newTopic) + _topics.value
-
-        if (initialArticle != null) {
-            scope.launch {
+        scope.launch {
+            topicDao.insertTopic(TopicEntity.fromDomain(newTopic))
+            if (initialArticle != null) {
                 articleDao.updateArticleTopic(initialArticle.id, topicId)
             }
         }
@@ -293,7 +329,7 @@ class NewsRepository(
             com.example.util.NotificationHelper.sendNotification(
                 context = ctx,
                 title = "✨ Создан новый сюжет",
-                message = "Сюжет «$title» создан и закреплен для отслеживания хронологии.",
+                message = "Сюжет «$title» создан для отслеживания хронологии.",
                 topicTitle = title
             )
         }
@@ -302,42 +338,60 @@ class NewsRepository(
     }
 
     fun addArticleToTopic(topicId: String, article: NewsArticle, context: android.content.Context? = null) {
-        val targetTopic = _topics.value.find { it.id == topicId } ?: return
-        val newEvent = com.example.data.model.ChronologyEvent(
-            id = "ev_${System.currentTimeMillis()}",
-            topicId = topicId,
-            title = article.title,
-            summary = article.description.ifBlank { article.title },
-            timestamp = article.publishedAt,
-            sourceName = article.sourceName,
-            milestoneType = if (article.isBreaking) com.example.data.model.MilestoneType.BREAKING else com.example.data.model.MilestoneType.DEVELOPMENT,
-            articleId = article.id
-        )
-
-        _topics.value = _topics.value.map { topic ->
-            if (topic.id == topicId) {
-                topic.copy(
-                    events = (topic.events + newEvent).sortedBy { it.timestamp },
-                    articleIds = (topic.articleIds + article.id).distinct(),
-                    updatedAt = System.currentTimeMillis()
-                )
-            } else {
-                topic
-            }
-        }
-
         scope.launch {
-            articleDao.updateArticleTopic(article.id, topicId)
-        }
-
-        if (targetTopic.isPinned && context != null) {
-            com.example.util.NotificationHelper.sendNotification(
-                context = context,
-                title = "⚡ Новое развитие сюжета: ${targetTopic.title.take(30)}...",
-                message = article.title,
-                topicTitle = targetTopic.title,
+            val entity = topicDao.getTopicById(topicId) ?: return@launch
+            val domain = entity.toDomain()
+            val newEvent = com.example.data.model.ChronologyEvent(
+                id = "ev_${System.currentTimeMillis()}",
+                topicId = topicId,
+                title = article.title,
+                summary = article.description.ifBlank { article.title },
+                timestamp = article.publishedAt,
+                sourceName = article.sourceName,
+                milestoneType = if (article.isBreaking) com.example.data.model.MilestoneType.BREAKING else com.example.data.model.MilestoneType.DEVELOPMENT,
                 articleId = article.id
             )
+
+            val updatedTopic = domain.copy(
+                events = (domain.events + newEvent).sortedBy { it.timestamp },
+                articleIds = (domain.articleIds + article.id).distinct(),
+                updatedAt = System.currentTimeMillis()
+            )
+            topicDao.insertTopic(TopicEntity.fromDomain(updatedTopic))
+            articleDao.updateArticleTopic(article.id, topicId)
+
+            if (domain.isPinned && context != null) {
+                com.example.util.NotificationHelper.sendNotification(
+                    context = context,
+                    title = "⚡ Новое развитие сюжета: ${domain.title.take(30)}...",
+                    message = article.title,
+                    topicTitle = domain.title,
+                    articleId = article.id
+                )
+            }
+        }
+    }
+
+    fun setBackgroundSyncEnabled(enabled: Boolean, context: android.content.Context) {
+        preferences.isBackgroundSyncEnabled = enabled
+        if (enabled) {
+            com.example.service.NewsBackgroundSyncReceiver.scheduleSync(context, preferences.backgroundSyncIntervalMinutes)
+        } else {
+            com.example.service.NewsBackgroundSyncReceiver.cancelSync(context)
+        }
+    }
+
+    fun setBackgroundSyncInterval(minutes: Int, context: android.content.Context) {
+        preferences.backgroundSyncIntervalMinutes = minutes
+        if (preferences.isBackgroundSyncEnabled) {
+            com.example.service.NewsBackgroundSyncReceiver.scheduleSync(context, minutes)
+        }
+    }
+
+    fun triggerBackgroundSyncNow(context: android.content.Context, onComplete: (Int) -> Unit) {
+        scope.launch {
+            val count = com.example.service.NewsBackgroundSyncReceiver.performSync(context, preferences)
+            onComplete(count)
         }
     }
 
@@ -345,7 +399,6 @@ class NewsRepository(
         articleDao.clearUnsavedArticles()
         val initial = InitialNewsData.getInitialArticles()
         articleDao.insertArticles(initial.map { ArticleEntity.fromDomain(it) })
-        _topics.value = InitialNewsData.getDefaultTopics()
         _lastUpdated.value = System.currentTimeMillis()
     }
 }

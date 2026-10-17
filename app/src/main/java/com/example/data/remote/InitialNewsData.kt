@@ -12,208 +12,80 @@ object InitialNewsData {
     fun getDefaultSources(): List<NewsSource> {
         return listOf(
             // --- МИР / ГЛОБАЛЬНЫЕ СМИ (20 источников) ---
-            NewsSource("bbc_world", "BBC World News", "https://bbc.com/news/world", "https://feeds.bbci.co.uk/news/world/rss.xml", NewsCategory.WORLD, "Великобритания", "🇬🇧", "EN", isEnabled = true, isFavorite = true),
-            NewsSource("cnn_world", "CNN International", "https://cnn.com/world", "http://rss.cnn.com/rss/edition_world.rss", NewsCategory.WORLD, "США", "🇺🇸", "EN", isEnabled = true, isFavorite = true),
-            NewsSource("reuters_world", "Reuters World", "https://reuters.com/world", "https://www.reutersagency.com/feed/?best-topics=world&post_type=best", NewsCategory.WORLD, "Великобритания", "🇬🇧", "EN", isEnabled = true, isFavorite = true),
-            NewsSource("nyt_world", "The New York Times", "https://nytimes.com/section/world", "https://rss.nytimes.com/services/xml/rss/nyt/World.xml", NewsCategory.WORLD, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("guardian_world", "The Guardian", "https://theguardian.com/world", "https://www.theguardian.com/world/rss", NewsCategory.WORLD, "Великобритания", "🇬🇧", "EN", isEnabled = true),
-            NewsSource("dw_world", "Deutsche Welle", "https://dw.com", "https://rss.dw.com/rdf/rss-en-all", NewsCategory.WORLD, "Германия", "🇩🇪", "EN", isEnabled = false),
-            NewsSource("france24", "France 24", "https://france24.com/en", "https://www.france24.com/en/rss", NewsCategory.WORLD, "Франция", "🇫🇷", "EN", isEnabled = false),
-            NewsSource("aljazeera", "Al Jazeera English", "https://aljazeera.com", "https://www.aljazeera.com/xml/rss/all.xml", NewsCategory.WORLD, "Катар", "🇶🇦", "EN", isEnabled = false),
-            NewsSource("nhk_world", "NHK World-Japan", "https://www3.nhk.or.jp/nhkworld", "https://www3.nhk.or.jp/nhkworld/en/news/rss/index.xml", NewsCategory.WORLD, "Япония", "🇯🇵", "EN", isEnabled = false),
-            NewsSource("cna_singapore", "CNA (Channel NewsAsia)", "https://channelnewsasia.com", "https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml", NewsCategory.WORLD, "Сингапур", "🇸🇬", "EN", isEnabled = false),
-            NewsSource("abc_au", "ABC News Australia", "https://abc.net.au/news", "https://www.abc.net.au/news/feed/51120/rss.xml", NewsCategory.WORLD, "Австралия", "🇦🇺", "EN", isEnabled = false),
-            NewsSource("cbc_ca", "CBC News World", "https://cbc.ca/news/world", "https://www.cbc.ca/cmlink/rss-world", NewsCategory.WORLD, "Канада", "🇨🇦", "EN", isEnabled = false),
-            NewsSource("lenta", "Лента.ру Главное", "https://lenta.ru", "https://lenta.ru/rss/news", NewsCategory.WORLD, "Россия", "🇷🇺", "RU", isEnabled = true, isFavorite = true),
-            NewsSource("bbc_ru", "BBC Русская служба", "https://bbc.com/russian", "https://feeds.bbci.co.uk/russian/rss.xml", NewsCategory.WORLD, "Великобритания", "🇬🇧", "RU", isEnabled = false),
-            NewsSource("kommersant", "Коммерсантъ", "https://kommersant.ru", "https://www.kommersant.ru/RSS/news.xml", NewsCategory.WORLD, "Россия", "🇷🇺", "RU", isEnabled = true),
-            NewsSource("npr_news", "NPR News", "https://npr.org", "https://feeds.npr.org/1004/rss.xml", NewsCategory.WORLD, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("time_mag", "TIME Magazine", "https://time.com", "https://time.com/feed/", NewsCategory.WORLD, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("el_pais", "El País", "https://elpais.com", "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada", NewsCategory.WORLD, "Испания", "🇪🇸", "ES", isEnabled = false),
-            NewsSource("spiegel", "Der Spiegel", "https://spiegel.de/international", "https://www.spiegel.de/international/index.rss", NewsCategory.WORLD, "Германия", "🇩🇪", "EN", isEnabled = false),
-            NewsSource("swissinfo", "SWI swissinfo.ch", "https://swissinfo.ch", "https://www.swissinfo.ch/eng/rss", NewsCategory.WORLD, "Швейцария", "🇨🇭", "EN", isEnabled = false),
+            NewsSource("bbc_world", "BBC World News", "https://bbc.com/news/world", "https://feeds.bbci.co.uk/news/world/rss.xml", NewsCategory.WORLD, "Великобритания", "🇬🇧", "EN", isEnabled = true, isFavorite = false),
+            NewsSource("cnn_world", "CNN International", "https://cnn.com/world", "http://rss.cnn.com/rss/edition_world.rss", NewsCategory.WORLD, "США", "🇺🇸", "EN", isEnabled = true, isFavorite = false),
+            NewsSource("reuters_world", "Reuters World", "https://reuters.com/world", "https://www.reutersagency.com/feed/?best-topics=world&post_type=best", NewsCategory.WORLD, "Великобритания", "🇬🇧", "EN", isEnabled = true, isFavorite = false),
+            NewsSource("nyt_world", "The New York Times", "https://nytimes.com/section/world", "https://rss.nytimes.com/services/xml/rss/nyt/World.xml", NewsCategory.WORLD, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("guardian_world", "The Guardian", "https://theguardian.com/world", "https://www.theguardian.com/world/rss", NewsCategory.WORLD, "Великобритания", "🇬🇧", "EN", isEnabled = true, isFavorite = false),
+            NewsSource("dw_world", "Deutsche Welle", "https://dw.com", "https://rss.dw.com/rdf/rss-en-all", NewsCategory.WORLD, "Германия", "🇩🇪", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("france24", "France 24", "https://france24.com/en", "https://www.france24.com/en/rss", NewsCategory.WORLD, "Франция", "🇫🇷", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("aljazeera", "Al Jazeera English", "https://aljazeera.com", "https://www.aljazeera.com/xml/rss/all.xml", NewsCategory.WORLD, "Катар", "🇶🇦", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("nhk_world", "NHK World-Japan", "https://www3.nhk.or.jp/nhkworld", "https://www3.nhk.or.jp/nhkworld/en/news/rss/index.xml", NewsCategory.WORLD, "Япония", "🇯🇵", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("cna_singapore", "CNA (Channel NewsAsia)", "https://channelnewsasia.com", "https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml", NewsCategory.WORLD, "Сингапур", "🇸🇬", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("abc_au", "ABC News Australia", "https://abc.net.au/news", "https://www.abc.net.au/news/feed/51120/rss.xml", NewsCategory.WORLD, "Австралия", "🇦🇺", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("cbc_ca", "CBC News World", "https://cbc.ca/news/world", "https://www.cbc.ca/cmlink/rss-world", NewsCategory.WORLD, "Канада", "🇨🇦", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("lenta", "Лента.ру Главное", "https://lenta.ru", "https://lenta.ru/rss/news", NewsCategory.WORLD, "Россия", "🇷🇺", "RU", isEnabled = true, isFavorite = false),
+            NewsSource("bbc_ru", "BBC Русская служба", "https://bbc.com/russian", "https://feeds.bbci.co.uk/russian/rss.xml", NewsCategory.WORLD, "Великобритания", "🇬🇧", "RU", isEnabled = false, isFavorite = false),
+            NewsSource("kommersant", "Коммерсантъ", "https://kommersant.ru", "https://www.kommersant.ru/RSS/news.xml", NewsCategory.WORLD, "Россия", "🇷🇺", "RU", isEnabled = true, isFavorite = false),
+            NewsSource("npr_news", "NPR News", "https://npr.org", "https://feeds.npr.org/1004/rss.xml", NewsCategory.WORLD, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("time_mag", "TIME Magazine", "https://time.com", "https://time.com/feed/", NewsCategory.WORLD, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("el_pais", "El País", "https://elpais.com", "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada", NewsCategory.WORLD, "Испания", "🇪🇸", "ES", isEnabled = false, isFavorite = false),
+            NewsSource("spiegel", "Der Spiegel", "https://spiegel.de/international", "https://www.spiegel.de/international/index.rss", NewsCategory.WORLD, "Германия", "🇩🇪", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("swissinfo", "SWI swissinfo.ch", "https://swissinfo.ch", "https://www.swissinfo.ch/eng/rss", NewsCategory.WORLD, "Швейцария", "🇨🇭", "EN", isEnabled = false, isFavorite = false),
 
             // --- ТЕХНОЛОГИИ & IT (15 источников) ---
-            NewsSource("habr", "Хабр IT & Dev", "https://habr.com", "https://habr.com/ru/rss/hub/all/all/?fl=ru", NewsCategory.TECH, "Россия", "🇷🇺", "RU", isEnabled = true, isFavorite = true),
-            NewsSource("techcrunch", "TechCrunch", "https://techcrunch.com", "https://techcrunch.com/feed/", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = true, isFavorite = true),
-            NewsSource("the_verge", "The Verge", "https://theverge.com", "https://www.theverge.com/rss/index.xml", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = true),
-            NewsSource("wired", "Wired", "https://wired.com", "https://www.wired.com/feed/rss", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("ars_technica", "Ars Technica", "https://arstechnica.com", "https://feeds.arstechnica.com/arstechnica/index", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("3dnews", "3DNews Железо & IT", "https://3dnews.ru", "https://3dnews.ru/news/rss/", NewsCategory.TECH, "Россия", "🇷🇺", "RU", isEnabled = true),
-            NewsSource("engadget", "Engadget", "https://engadget.com", "https://www.engadget.com/rss.xml", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("mit_tech_review", "MIT Technology Review", "https://technologyreview.com", "https://www.technologyreview.com/feed/", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("zdnet", "ZDNet", "https://zdnet.com", "https://www.zdnet.com/news/rss.xml", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("nine_to_five_mac", "9to5Mac", "https://9to5mac.com", "https://9to5mac.com/feed/", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("android_police", "Android Police", "https://androidpolice.com", "https://www.androidpolice.com/feed/", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("hacker_news", "Hacker News", "https://news.ycombinator.com", "https://news.ycombinator.com/rss", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("cnet_tech", "CNET Tech", "https://cnet.com", "https://www.cnet.com/rss/news/", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("toms_hardware", "Tom's Hardware", "https://tomshardware.com", "https://www.tomshardware.com/feeds/all", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("venturebeat", "VentureBeat AI", "https://venturebeat.com", "https://venturebeat.com/feed/", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false),
+            NewsSource("habr", "Хабр IT & Dev", "https://habr.com", "https://habr.com/ru/rss/hub/all/all/?fl=ru", NewsCategory.TECH, "Россия", "🇷🇺", "RU", isEnabled = true, isFavorite = false),
+            NewsSource("techcrunch", "TechCrunch", "https://techcrunch.com", "https://techcrunch.com/feed/", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = true, isFavorite = false),
+            NewsSource("the_verge", "The Verge", "https://theverge.com", "https://www.theverge.com/rss/index.xml", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = true, isFavorite = false),
+            NewsSource("wired", "Wired", "https://wired.com", "https://www.wired.com/feed/rss", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("ars_technica", "Ars Technica", "https://arstechnica.com", "https://feeds.arstechnica.com/arstechnica/index", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("3dnews", "3DNews Железо & IT", "https://3dnews.ru", "https://3dnews.ru/news/rss/", NewsCategory.TECH, "Россия", "🇷🇺", "RU", isEnabled = true, isFavorite = false),
+            NewsSource("engadget", "Engadget", "https://engadget.com", "https://www.engadget.com/rss.xml", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("mit_tech_review", "MIT Technology Review", "https://technologyreview.com", "https://www.technologyreview.com/feed/", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("zdnet", "ZDNet", "https://zdnet.com", "https://www.zdnet.com/news/rss.xml", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("nine_to_five_mac", "9to5Mac", "https://9to5mac.com", "https://9to5mac.com/feed/", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("android_police", "Android Police", "https://androidpolice.com", "https://www.androidpolice.com/feed/", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("hacker_news", "Hacker News", "https://news.ycombinator.com", "https://news.ycombinator.com/rss", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("cnet_tech", "CNET Tech", "https://cnet.com", "https://www.cnet.com/rss/news/", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("toms_hardware", "Tom's Hardware", "https://tomshardware.com", "https://www.tomshardware.com/feeds/all", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("venturebeat", "VentureBeat AI", "https://venturebeat.com", "https://venturebeat.com/feed/", NewsCategory.TECH, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
 
             // --- БИЗНЕС & ЭКОНОМИКА (10 источников) ---
-            NewsSource("wsj_biz", "Wall Street Journal", "https://wsj.com", "https://feeds.a.dj.com/rss/WSJcomUSBusiness.xml", NewsCategory.BUSINESS, "США", "🇺🇸", "EN", isEnabled = true, isFavorite = true),
-            NewsSource("ft_biz", "Financial Times", "https://ft.com", "https://www.ft.com/rss/home/uk", NewsCategory.BUSINESS, "Великобритания", "🇬🇧", "EN", isEnabled = false),
-            NewsSource("cnbc_biz", "CNBC Markets", "https://cnbc.com", "https://search.cnbc.com/rs/search/view.html?partnerId=2000&keywords=markets&sort=date", NewsCategory.BUSINESS, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("forbes_biz", "Forbes Business", "https://forbes.com", "https://www.forbes.com/business/feed/", NewsCategory.BUSINESS, "США", "🇺🇸", "EN", isEnabled = true),
-            NewsSource("marketwatch", "MarketWatch", "https://marketwatch.com", "https://feeds.content.dowjones.io/public/rss/mw_topstories", NewsCategory.BUSINESS, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("economist", "The Economist", "https://economist.com", "https://www.economist.com/finance-and-economics/rss.xml", NewsCategory.BUSINESS, "Великобритания", "🇬🇧", "EN", isEnabled = false),
-            NewsSource("rbc_biz", "РБК Экономика", "https://rbc.ru", "https://rssexport.rbc.ru/rbcnews/news/20/full.rss", NewsCategory.BUSINESS, "Россия", "🇷🇺", "RU", isEnabled = true),
-            NewsSource("yahoo_finance", "Yahoo Finance", "https://finance.yahoo.com", "https://finance.yahoo.com/news/rssindex", NewsCategory.BUSINESS, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("quartz", "Quartz Economy", "https://qz.com", "https://qz.com/feed", NewsCategory.BUSINESS, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("bloomberg_market", "Bloomberg Markets", "https://bloomberg.com", "https://feeds.bloomberg.com/markets/news.rss", NewsCategory.BUSINESS, "США", "🇺🇸", "EN", isEnabled = false),
+            NewsSource("wsj_biz", "Wall Street Journal", "https://wsj.com", "https://feeds.a.dj.com/rss/WSJcomUSBusiness.xml", NewsCategory.BUSINESS, "США", "🇺🇸", "EN", isEnabled = true, isFavorite = false),
+            NewsSource("ft_biz", "Financial Times", "https://ft.com", "https://www.ft.com/rss/home/uk", NewsCategory.BUSINESS, "Великобритания", "🇬🇧", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("cnbc_biz", "CNBC Markets", "https://cnbc.com", "https://search.cnbc.com/rs/search/view.html?partnerId=2000&keywords=markets&sort=date", NewsCategory.BUSINESS, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("forbes_biz", "Forbes Business", "https://forbes.com", "https://www.forbes.com/business/feed/", NewsCategory.BUSINESS, "США", "🇺🇸", "EN", isEnabled = true, isFavorite = false),
+            NewsSource("marketwatch", "MarketWatch", "https://marketwatch.com", "https://feeds.content.dowjones.io/public/rss/mw_topstories", NewsCategory.BUSINESS, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("economist", "The Economist", "https://economist.com", "https://www.economist.com/finance-and-economics/rss.xml", NewsCategory.BUSINESS, "Великобритания", "🇬🇧", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("rbc_biz", "РБК Экономика", "https://rbc.ru", "https://rssexport.rbc.ru/rbcnews/news/20/full.rss", NewsCategory.BUSINESS, "Россия", "🇷🇺", "RU", isEnabled = true, isFavorite = false),
+            NewsSource("yahoo_finance", "Yahoo Finance", "https://finance.yahoo.com", "https://finance.yahoo.com/news/rssindex", NewsCategory.BUSINESS, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("quartz", "Quartz Economy", "https://qz.com", "https://qz.com/feed", NewsCategory.BUSINESS, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("bloomberg_market", "Bloomberg Markets", "https://bloomberg.com", "https://feeds.bloomberg.com/markets/news.rss", NewsCategory.BUSINESS, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
 
             // --- НАУКА & КОСМОС (8 источников) ---
-            NewsSource("nasa", "NASA Breaking News", "https://nasa.gov", "https://www.nasa.gov/news-release/feed/", NewsCategory.SCIENCE, "США", "🇺🇸", "EN", isEnabled = true, isFavorite = true),
-            NewsSource("naked_science", "Naked Science", "https://naked-science.ru", "https://naked-science.ru/feed", NewsCategory.SCIENCE, "Россия", "🇷🇺", "RU", isEnabled = true, isFavorite = true),
-            NewsSource("space_com", "Space.com", "https://space.com", "https://www.space.com/feeds/all", NewsCategory.SCIENCE, "США", "🇺🇸", "EN", isEnabled = true),
-            NewsSource("sci_american", "Scientific American", "https://scientificamerican.com", "http://rss.sciam.com/ScientificAmerican-Global", NewsCategory.SCIENCE, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("new_scientist", "New Scientist", "https://newscientist.com", "https://www.newscientist.com/feed/home/", NewsCategory.SCIENCE, "Великобритания", "🇬🇧", "EN", isEnabled = false),
-            NewsSource("science_daily", "ScienceDaily", "https://sciencedaily.com", "https://www.sciencedaily.com/rss/all.xml", NewsCategory.SCIENCE, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("phys_org", "Phys.org", "https://phys.org", "https://phys.org/rss-feed/", NewsCategory.SCIENCE, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("esa_space", "European Space Agency", "https://esa.int", "https://www.esa.int/rssfeed/Our_Activities/Space_Science", NewsCategory.SCIENCE, "ЕС", "🇪🇺", "EN", isEnabled = false),
+            NewsSource("nasa", "NASA Breaking News", "https://nasa.gov", "https://www.nasa.gov/news-release/feed/", NewsCategory.SCIENCE, "США", "🇺🇸", "EN", isEnabled = true, isFavorite = false),
+            NewsSource("naked_science", "Naked Science", "https://naked-science.ru", "https://naked-science.ru/feed", NewsCategory.SCIENCE, "Россия", "🇷🇺", "RU", isEnabled = true, isFavorite = false),
+            NewsSource("space_com", "Space.com", "https://space.com", "https://www.space.com/feeds/all", NewsCategory.SCIENCE, "США", "🇺🇸", "EN", isEnabled = true, isFavorite = false),
+            NewsSource("sci_american", "Scientific American", "https://scientificamerican.com", "http://rss.sciam.com/ScientificAmerican-Global", NewsCategory.SCIENCE, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("new_scientist", "New Scientist", "https://newscientist.com", "https://www.newscientist.com/feed/home/", NewsCategory.SCIENCE, "Великобритания", "🇬🇧", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("science_daily", "ScienceDaily", "https://sciencedaily.com", "https://www.sciencedaily.com/rss/all.xml", NewsCategory.SCIENCE, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("phys_org", "Phys.org", "https://phys.org", "https://phys.org/rss-feed/", NewsCategory.SCIENCE, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("esa_space", "European Space Agency", "https://esa.int", "https://www.esa.int/rssfeed/Our_Activities/Space_Science", NewsCategory.SCIENCE, "ЕС", "🇪🇺", "EN", isEnabled = false, isFavorite = false),
 
             // --- ИГРЫ & МЕДИА (8 источников) ---
-            NewsSource("stopgame", "StopGame Новости Игр", "https://stopgame.ru", "https://stopgame.ru/rss/rss_news.xml", NewsCategory.GAMES, "Россия", "🇷🇺", "RU", isEnabled = true, isFavorite = true),
-            NewsSource("ign", "IGN Entertainment", "https://ign.com", "https://feeds.feedburner.com/ign/all", NewsCategory.GAMES, "США", "🇺🇸", "EN", isEnabled = true, isFavorite = true),
-            NewsSource("gamespot", "GameSpot", "https://gamespot.com", "https://www.gamespot.com/feeds/mashup/", NewsCategory.GAMES, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("kotaku", "Kotaku", "https://kotaku.com", "https://kotaku.com/rss", NewsCategory.GAMES, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("polygon", "Polygon", "https://polygon.com", "https://www.polygon.com/rss/index.xml", NewsCategory.GAMES, "США", "🇺🇸", "EN", isEnabled = false),
-            NewsSource("pc_gamer", "PC Gamer", "https://pcgamer.com", "https://www.pcgamer.com/rss/", NewsCategory.GAMES, "Великобритания", "🇬🇧", "EN", isEnabled = false),
-            NewsSource("eurogamer", "Eurogamer", "https://eurogamer.net", "https://www.eurogamer.net/feed", NewsCategory.GAMES, "Великобритания", "🇬🇧", "EN", isEnabled = false),
-            NewsSource("dtf", "DTF Игры & Кино", "https://dtf.ru", "https://dtf.ru/rss/all", NewsCategory.GAMES, "Россия", "🇷🇺", "RU", isEnabled = true)
+            NewsSource("stopgame", "StopGame Новости Игр", "https://stopgame.ru", "https://stopgame.ru/rss/rss_news.xml", NewsCategory.GAMES, "Россия", "🇷🇺", "RU", isEnabled = true, isFavorite = false),
+            NewsSource("ign", "IGN Entertainment", "https://ign.com", "https://feeds.feedburner.com/ign/all", NewsCategory.GAMES, "США", "🇺🇸", "EN", isEnabled = true, isFavorite = false),
+            NewsSource("gamespot", "GameSpot", "https://gamespot.com", "https://www.gamespot.com/feeds/mashup/", NewsCategory.GAMES, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("kotaku", "Kotaku", "https://kotaku.com", "https://kotaku.com/rss", NewsCategory.GAMES, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("polygon", "Polygon", "https://polygon.com", "https://www.polygon.com/rss/index.xml", NewsCategory.GAMES, "США", "🇺🇸", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("pc_gamer", "PC Gamer", "https://pcgamer.com", "https://www.pcgamer.com/rss/", NewsCategory.GAMES, "Великобритания", "🇬🇧", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("eurogamer", "Eurogamer", "https://eurogamer.net", "https://www.eurogamer.net/feed", NewsCategory.GAMES, "Великобритания", "🇬🇧", "EN", isEnabled = false, isFavorite = false),
+            NewsSource("dtf", "DTF Игры & Кино", "https://dtf.ru", "https://dtf.ru/rss/all", NewsCategory.GAMES, "Россия", "🇷🇺", "RU", isEnabled = true, isFavorite = false)
         )
     }
 
     fun getDefaultTopics(): List<TopicStory> {
-        val now = System.currentTimeMillis()
-        return listOf(
-            TopicStory(
-                id = "topic_quantum",
-                title = "Квантовая революция: архитектура кубитов и сверхбыстрые процессоры",
-                summary = "Хроника разработки устойчивых к помехам квантовых микросхем нового поколения и их коммерческого тестирования",
-                category = NewsCategory.TECH,
-                isPinned = false,
-                articleIds = listOf("breaking_01", "tech_02", "tech_q1"),
-                createdAt = now - 3 * 24 * 3600 * 1000,
-                updatedAt = now - 3 * 60 * 1000,
-                events = listOf(
-                    ChronologyEvent(
-                        id = "ev_q1",
-                        topicId = "topic_quantum",
-                        title = "Теоретическое обоснование топологических кубитов",
-                        summary = "Международная группа физиков опубликовала математическую модель снижения электромагнитного шума.",
-                        timestamp = now - 2 * 24 * 3600 * 1000,
-                        sourceName = "Хабр Наука",
-                        milestoneType = MilestoneType.START,
-                        articleId = "tech_q1"
-                    ),
-                    ChronologyEvent(
-                        id = "ev_q2",
-                        topicId = "topic_quantum",
-                        title = "Синтез графеновой подложки и литография чипа",
-                        summary = "Инженеры изготовили первые рабочие ячейки с квантовой когерентностью при криогенных температурах.",
-                        timestamp = now - 24 * 3600 * 1000,
-                        sourceName = "3DNews",
-                        milestoneType = MilestoneType.DEVELOPMENT,
-                        articleId = "tech_02"
-                    ),
-                    ChronologyEvent(
-                        id = "ev_q3",
-                        topicId = "topic_quantum",
-                        title = "Прорыв: сверхбыстрый квантовый процессор",
-                        summary = "Представлен рабочий кристалл, снизивший уровень ошибок на порядок и готовый к первым индустриальным тестам.",
-                        timestamp = now - 3 * 60 * 1000,
-                        sourceName = "Хабр Наука",
-                        milestoneType = MilestoneType.BREAKING,
-                        articleId = "breaking_01"
-                    )
-                )
-            ),
-            TopicStory(
-                id = "topic_space",
-                title = "Миссия телескопа «Джеймс Уэбб»: поиск биомаркеров в глубоком космосе",
-                summary = "Развитие астрофизических открытий экзопланет и атмосферных аномалий телескопом Джеймс Уэбб",
-                category = NewsCategory.SCIENCE,
-                isPinned = false,
-                articleIds = listOf("breaking_02", "science_02", "science_s1"),
-                createdAt = now - 7 * 24 * 3600 * 1000,
-                updatedAt = now - 12 * 60 * 1000,
-                events = listOf(
-                    ChronologyEvent(
-                        id = "ev_s1",
-                        topicId = "topic_space",
-                        title = "Калибровка инфракрасного спектрометра NIRSpec",
-                        summary = "Орбитальная обсерватория завершила тестовые экспозиции в созвездии Льва.",
-                        timestamp = now - 5 * 24 * 3600 * 1000,
-                        sourceName = "Naked Science",
-                        milestoneType = MilestoneType.START,
-                        articleId = "science_s1"
-                    ),
-                    ChronologyEvent(
-                        id = "ev_s2",
-                        topicId = "topic_space",
-                        title = "Фиксация спектральных полос метана и CO2",
-                        summary = "Компьютерная обработка транзитных кривых подтвердила наличие плотной водородной оболочки.",
-                        timestamp = now - 2 * 24 * 3600 * 1000,
-                        sourceName = "Naked Science",
-                        milestoneType = MilestoneType.DEVELOPMENT,
-                        articleId = "science_02"
-                    ),
-                    ChronologyEvent(
-                        id = "ev_s3",
-                        topicId = "topic_space",
-                        title = "Обнаружение водяного пара в обитаемой зоне K2-18b",
-                        summary = "Официальное подтверждение данных спектроскопии: на экзопланете может существовать теплый жидкий океан.",
-                        timestamp = now - 12 * 60 * 1000,
-                        sourceName = "Naked Science",
-                        milestoneType = MilestoneType.BREAKING,
-                        articleId = "breaking_02"
-                    )
-                )
-            ),
-            TopicStory(
-                id = "topic_climate",
-                title = "Глобальная трансформация энергетики и климатические соглашения",
-                summary = "Хронология межгосударственных инициатив по переходу на возобновляемые ресурсы и модернизацию сетей",
-                category = NewsCategory.WORLD,
-                isPinned = false,
-                articleIds = listOf("world_01", "biz_01", "world_c1"),
-                createdAt = now - 10 * 24 * 3600 * 1000,
-                updatedAt = now - 45 * 60 * 1000,
-                events = listOf(
-                    ChronologyEvent(
-                        id = "ev_c1",
-                        topicId = "topic_climate",
-                        title = "Открытие международного энергетического форума",
-                        summary = "Делегации более 100 стран начали обсуждение декарбонизации промышленности.",
-                        timestamp = now - 6 * 24 * 3600 * 1000,
-                        sourceName = "BBC Мир",
-                        milestoneType = MilestoneType.START,
-                        articleId = "world_c1"
-                    ),
-                    ChronologyEvent(
-                        id = "ev_c2",
-                        topicId = "topic_climate",
-                        title = "Перераспределение суверенных фондов и золотых резервов",
-                        summary = "Мировые центробанки диверсифицируют активы в условиях структурной перестройки мировой торговли.",
-                        timestamp = now - 45 * 60 * 1000,
-                        sourceName = "Лента Финансы",
-                        milestoneType = MilestoneType.DEVELOPMENT,
-                        articleId = "biz_01"
-                    ),
-                    ChronologyEvent(
-                        id = "ev_c3",
-                        topicId = "topic_climate",
-                        title = "Подписание декларации об удвоении мощностей ВИЭ к 2030 году",
-                        summary = "Более 70 государств одобрили масштабный инвестиционный пакет для зеленой энергетики.",
-                        timestamp = now - 65 * 60 * 1000,
-                        sourceName = "BBC Мир",
-                        milestoneType = MilestoneType.MILESTONE,
-                        articleId = "world_01"
-                    )
-                )
-            )
-        )
+        return emptyList()
     }
 
     fun getInitialArticles(): List<NewsArticle> {

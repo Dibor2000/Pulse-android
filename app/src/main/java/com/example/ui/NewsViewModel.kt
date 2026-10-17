@@ -32,7 +32,13 @@ enum class NavTab(val title: String) {
 class NewsViewModel(application: Application) : AndroidViewModel(application) {
 
     private val database = NewsDatabase.getInstance(application)
-    private val repository = NewsRepository(database.articleDao(), scope = viewModelScope)
+    val preferences = com.example.util.NewsPreferences(application)
+    private val repository = NewsRepository(
+        articleDao = database.articleDao(),
+        topicDao = database.topicDao(),
+        preferences = preferences,
+        scope = viewModelScope
+    )
     val audioReader = AudioNewsReader(application)
 
     private val _currentTab = MutableStateFlow(NavTab.FEED)
@@ -47,10 +53,10 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
     private val _isSearchActive = MutableStateFlow(false)
     val isSearchActive: StateFlow<Boolean> = _isSearchActive.asStateFlow()
 
-    private val _filterUnreadOnly = MutableStateFlow(false)
+    private val _filterUnreadOnly = MutableStateFlow(preferences.filterUnreadOnly)
     val filterUnreadOnly: StateFlow<Boolean> = _filterUnreadOnly.asStateFlow()
 
-    private val _layoutMode = MutableStateFlow(LayoutMode.CARDS)
+    private val _layoutMode = MutableStateFlow(if (preferences.layoutMode == "COMPACT") LayoutMode.COMPACT else LayoutMode.CARDS)
     val layoutMode: StateFlow<LayoutMode> = _layoutMode.asStateFlow()
 
     private val _selectedArticle = MutableStateFlow<NewsArticle?>(null)
@@ -64,9 +70,13 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
 
     val inAppNotifications = com.example.util.NotificationHelper.notifications
 
-    val topics = repository.topics
+    val topics: StateFlow<List<com.example.data.model.TopicStory>> = repository.topics.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList()
+    )
 
-    private val _readerFontSizeSp = MutableStateFlow(17)
+    private val _readerFontSizeSp = MutableStateFlow(preferences.readerFontSizeSp)
     val readerFontSizeSp: StateFlow<Int> = _readerFontSizeSp.asStateFlow()
 
     val isRefreshing: StateFlow<Boolean> = repository.isRefreshing
@@ -77,8 +87,17 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
 
     private val translationService = com.example.data.remote.TranslationService()
 
-    private val _targetLanguage = MutableStateFlow("ru")
+    private val _targetLanguage = MutableStateFlow(preferences.targetLanguage)
     val targetLanguage: StateFlow<String> = _targetLanguage.asStateFlow()
+
+    private val _isBackgroundSyncEnabled = MutableStateFlow(preferences.isBackgroundSyncEnabled)
+    val isBackgroundSyncEnabled: StateFlow<Boolean> = _isBackgroundSyncEnabled.asStateFlow()
+
+    private val _backgroundSyncIntervalMinutes = MutableStateFlow(preferences.backgroundSyncIntervalMinutes)
+    val backgroundSyncIntervalMinutes: StateFlow<Int> = _backgroundSyncIntervalMinutes.asStateFlow()
+
+    private val _lastBackgroundSyncTime = MutableStateFlow(preferences.lastBackgroundSyncTime)
+    val lastBackgroundSyncTime: StateFlow<Long> = _lastBackgroundSyncTime.asStateFlow()
 
     private val _translatedArticles = MutableStateFlow<Map<String, NewsArticle>>(emptyMap())
     val translatedArticles: StateFlow<Map<String, NewsArticle>> = _translatedArticles.asStateFlow()
@@ -163,11 +182,15 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun toggleFilterUnreadOnly() {
-        _filterUnreadOnly.value = !_filterUnreadOnly.value
+        val next = !_filterUnreadOnly.value
+        _filterUnreadOnly.value = next
+        preferences.filterUnreadOnly = next
     }
 
     fun toggleLayoutMode() {
-        _layoutMode.value = if (_layoutMode.value == LayoutMode.CARDS) LayoutMode.COMPACT else LayoutMode.CARDS
+        val next = if (_layoutMode.value == LayoutMode.CARDS) LayoutMode.COMPACT else LayoutMode.CARDS
+        _layoutMode.value = next
+        preferences.layoutMode = next.name
     }
 
     fun openArticle(article: NewsArticle) {
@@ -249,6 +272,7 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setTargetLanguage(langCode: String) {
         _targetLanguage.value = langCode
+        preferences.targetLanguage = langCode
         // Invalidate current translations to re-translate into new language if requested
         _translatedArticles.value = emptyMap()
     }
@@ -280,12 +304,40 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
 
     fun togglePinTopic(topicId: String, context: android.content.Context) {
         repository.togglePinTopic(topicId, context)
-        // If current selected topic matches, update its state
         _selectedTopic.value?.let { current ->
             if (current.id == topicId) {
                 _selectedTopic.value = current.copy(isPinned = !current.isPinned)
             }
         }
+    }
+
+    fun deleteTopic(topicId: String) {
+        if (_selectedTopic.value?.id == topicId) {
+            _selectedTopic.value = null
+        }
+        repository.deleteTopic(topicId)
+    }
+
+    fun archiveTopic(topicId: String, isArchived: Boolean) {
+        repository.archiveTopic(topicId, isArchived)
+        if (_selectedTopic.value?.id == topicId) {
+            _selectedTopic.value = _selectedTopic.value?.copy(isArchived = isArchived)
+        }
+    }
+
+    fun createTopic(
+        title: String,
+        summary: String,
+        category: NewsCategory,
+        context: android.content.Context
+    ): String {
+        return repository.createTopic(
+            title = title,
+            summary = summary,
+            category = category,
+            initialArticle = null,
+            context = context
+        )
     }
 
     fun sendTestNotification(topicId: String, context: android.content.Context) {
@@ -305,15 +357,31 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
             initialArticle = article,
             context = context
         )
-        // Find created topic and select it
-        val created = repository.topics.value.find { it.id == topicId }
+        val created = topics.value.find { it.id == topicId }
         _selectedTopic.value = created
     }
 
     fun addArticleToTopic(topicId: String, article: NewsArticle, context: android.content.Context) {
         repository.addArticleToTopic(topicId, article, context)
-        val updated = repository.topics.value.find { it.id == topicId }
+        val updated = topics.value.find { it.id == topicId }
         _selectedTopic.value = updated
+    }
+
+    fun setBackgroundSyncEnabled(enabled: Boolean) {
+        _isBackgroundSyncEnabled.value = enabled
+        repository.setBackgroundSyncEnabled(enabled, getApplication())
+    }
+
+    fun setBackgroundSyncInterval(minutes: Int) {
+        _backgroundSyncIntervalMinutes.value = minutes
+        repository.setBackgroundSyncInterval(minutes, getApplication())
+    }
+
+    fun triggerBackgroundSyncNow(onComplete: (Int) -> Unit) {
+        repository.triggerBackgroundSyncNow(getApplication()) { count ->
+            _lastBackgroundSyncTime.value = preferences.lastBackgroundSyncTime
+            onComplete(count)
+        }
     }
 
     fun toggleNotificationPanel() {
@@ -326,7 +394,9 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
 
     fun adjustFontSize(delta: Int) {
         val current = _readerFontSizeSp.value
-        _readerFontSizeSp.value = (current + delta).coerceIn(13, 26)
+        val next = (current + delta).coerceIn(13, 26)
+        _readerFontSizeSp.value = next
+        preferences.readerFontSizeSp = next
     }
 
     fun playAudio(article: NewsArticle) {

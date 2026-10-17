@@ -92,6 +92,9 @@ fun NewsApp(
     val countdownSeconds by viewModel.countdownSeconds.collectAsState()
     val autoRefreshIntervalSec by viewModel.autoRefreshIntervalSec.collectAsState()
     val readerFontSizeSp by viewModel.readerFontSizeSp.collectAsState()
+    val isBackgroundSyncEnabled by viewModel.isBackgroundSyncEnabled.collectAsState()
+    val backgroundSyncIntervalMinutes by viewModel.backgroundSyncIntervalMinutes.collectAsState()
+    val lastBackgroundSyncTime by viewModel.lastBackgroundSyncTime.collectAsState()
 
     val isAudioPlaying by viewModel.audioReader.isPlaying.collectAsState()
 
@@ -249,6 +252,11 @@ fun NewsApp(
                         allArticles = allArticles,
                         onSelectTopic = { viewModel.selectTopic(it) },
                         onTogglePin = { id, ctx -> viewModel.togglePinTopic(id, ctx) },
+                        onArchiveTopic = { id, archived -> viewModel.archiveTopic(id, archived) },
+                        onDeleteTopic = { id -> viewModel.deleteTopic(id) },
+                        onCreateTopic = { title, summary, category ->
+                            viewModel.createTopic(title, summary, category, context)
+                        },
                         onSendTestNotification = { id, ctx -> viewModel.sendTestNotification(id, ctx) },
                         onArticleClick = { viewModel.openArticle(it) },
                         onBookmarkToggle = { viewModel.toggleBookmark(it) }
@@ -276,8 +284,14 @@ fun NewsApp(
                     SettingsScreen(
                         autoRefreshIntervalSec = autoRefreshIntervalSec,
                         targetLanguage = targetLanguage,
+                        isBackgroundSyncEnabled = isBackgroundSyncEnabled,
+                        backgroundSyncIntervalMinutes = backgroundSyncIntervalMinutes,
+                        lastBackgroundSyncTime = lastBackgroundSyncTime,
                         onIntervalChange = { viewModel.setAutoRefreshInterval(it) },
                         onTargetLanguageChange = { viewModel.setTargetLanguage(it) },
+                        onBackgroundSyncEnabledChange = { viewModel.setBackgroundSyncEnabled(it) },
+                        onBackgroundSyncIntervalChange = { viewModel.setBackgroundSyncInterval(it) },
+                        onTriggerBackgroundSyncNow = { onResult -> viewModel.triggerBackgroundSyncNow(onResult) },
                         onClearCache = { viewModel.clearCache() },
                         onOpenPersonalization = { viewModel.setPersonalizationDialogVisible(true) }
                     )
